@@ -1,7 +1,10 @@
+package viewer;
 import processing.core.*;
 
 import Jcg.geometry.*;
 import Jcg.polyhedron.*;
+import MeshManager.*;
+import Parametrization.*;
 
 /**
  * A simple 3d viewer for visualizing surface meshes (based on Processing)

@@ -1,8 +1,9 @@
+package MeshManager;
 import Jcg.geometry.*;
 import Jcg.mesh.MeshLoader;
 import Jcg.mesh.SharedVertexRepresentation;
 import Jcg.polyhedron.*;
-
+import viewer.MeshViewer;
 
 /**
  * Class for rendering a surface triangle mesh (using Processing)

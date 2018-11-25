@@ -5,8 +5,12 @@
       <root url="jar://$PROJECT_DIR$/lib/geometry.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/Jama-1.0.2.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/Jcg.jar!/" />
+      <root url="file://$PROJECT_DIR$/lib/MTJ" />
+      <root url="file://$PROJECT_DIR$/lib/ParallelColt" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/MTJ" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/ParallelColt" recursive="false" />
   </library>
 </component>

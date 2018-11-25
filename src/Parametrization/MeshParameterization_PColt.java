@@ -1,3 +1,4 @@
+package Parametrization;
 import java.util.List;
 
 import Jcg.geometry.Point_2;
@@ -16,6 +17,7 @@ import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoubleDiagonal;
 import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
+
 
 /**
  * Implementation of the planar (2D) Tutte barycentric method, based on the resolution of 2 linear systems
