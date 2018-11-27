@@ -103,7 +103,7 @@ public class MeshViewer extends PApplet {
 		public static void main(String args[]) {
 			//PApplet pa=new MeshViewer();
 			//pa.setSize(400, 400);
-			PApplet.main(new String[] { "MeshViewer" });
+			PApplet.main(new String[] { "viewer.MeshViewer" });
 		}
 
 }
