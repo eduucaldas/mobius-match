@@ -1,8 +1,7 @@
-package MeshManager;
+package meshmanager;
 
 import Jcg.geometry.*;
 import Jcg.mesh.MeshLoader;
-import Jcg.mesh.SharedVertexRepresentation;
 import Jcg.polyhedron.*;
 import viewer.MeshViewer;
 

@@ -1,4 +1,4 @@
-package Parametrization;
+package parametrization;
 
 import Jcg.geometry.Point_2;
 import Jcg.geometry.Point_3;

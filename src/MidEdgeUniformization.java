@@ -1,18 +1,18 @@
-import MeshManager.SurfaceMesh;
+import meshmanager.SurfaceMesh;
 
-public class midEdgeUniformization {
+public class MidEdgeUniformization {
     /* This class intends to build the mid-edge mesh, then to parametrize it on the complex plane.
      */
     SurfaceMesh originalMesh;
     SurfaceMesh midEdgeMesh;
 
-    public midEdgeUniformization(SurfaceMesh m) {
+    public MidEdgeUniformization(SurfaceMesh m) {
         this.originalMesh = m;
-        this.createMidEdgeMesh();
+        this.computeMidEdgeMesh();
     }
 
-    private void createMidEdgeMesh() {
-        /* create our mid edge mesh*/
+    private void computeMidEdgeMesh() {
+        /* create mid edge mesh*/
         throw new Error("to be implemented");
         //this.midEdgeMesh=;
     }

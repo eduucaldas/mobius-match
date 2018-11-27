@@ -4,8 +4,8 @@ import processing.core.*;
 
 import Jcg.geometry.*;
 import Jcg.polyhedron.*;
-import MeshManager.*;
-import Parametrization.*;
+import meshmanager.*;
+import parametrization.*;
 
 /**
  * A simple 3d viewer for visualizing surface meshes (based on Processing)
@@ -26,8 +26,8 @@ public class MeshViewer extends PApplet {
     //String filename="OFF/sphere.off";
     //String filename="OFF/cube.off";
     //String filename="OFF/star.off";
-    String filename = "OFF/tri_triceratops.off";
     //String filename="OFF/horse1.off";
+    String filename = "OFF/tri_triceratops.off";
 
     public void setup() {
         size(800, 600, P3D);
@@ -46,7 +46,7 @@ public class MeshViewer extends PApplet {
 
     public void draw() {
         background(255);
-        //this.lights();
+//        this.lights();
         directionalLight(101, 204, 255, -1, 0, 0);
         directionalLight(51, 102, 126, 0, -1, 0);
         directionalLight(51, 102, 126, 0, 0, -1);
@@ -74,6 +74,8 @@ public class MeshViewer extends PApplet {
             case ('l'):
             case ('L'):
                 this.changeLALibrary();
+                break;
+            default:
                 break;
         }
 

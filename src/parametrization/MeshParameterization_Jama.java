@@ -1,6 +1,4 @@
-package Parametrization;
-
-import java.util.List;
+package parametrization;
 
 import Jama.Matrix;
 

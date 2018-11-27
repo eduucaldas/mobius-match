@@ -4,10 +4,10 @@ import Jcg.geometry.Point_3;
 import Jcg.geometry.Vector_3;
 import Jcg.polyhedron.Halfedge;
 import Jcg.polyhedron.Vertex;
-import MeshManager.SurfaceMesh;
+import meshmanager.SurfaceMesh;
 
-public class sampler {
-    /* The sampler class enables us to do the first step, that is sampling from two meshes.
+public class Sampler {
+    /* The Sampler class enables us to do the first step, that is sampling from two meshes.
         Starting by sampling local maxima of Gauss Curvature by using a smoothest version of the angle-deficit formula [Desbrun et al. 2002]
         It then uses the Farthest Point Algorithm to take a spread of points, computing geodesic distances with an approximate algorithm based on
         Dijkstra's Shortest path algorithm
@@ -17,7 +17,7 @@ public class sampler {
     int N;
     double epsilon;
 
-    public sampler(SurfaceMesh M1, SurfaceMesh M2, int N, double epsilon) {
+    public Sampler(SurfaceMesh M1, SurfaceMesh M2, int N, double epsilon) {
         this.M1 = M1;
         this.M2 = M2;
         if (N != -1) {
