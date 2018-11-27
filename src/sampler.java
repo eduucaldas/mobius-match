@@ -1,4 +1,5 @@
-import java.util.ArrayList;
+import java.util.*;
+
 import Jcg.geometry.Point_3;
 import Jcg.geometry.Vector_3;
 import Jcg.polyhedron.Halfedge;
@@ -11,13 +12,9 @@ public class sampler {
         It then uses the Farthest Point Algorithm to take a spread of points, computing geodesic distances with an approximate algorithm based on
         Dijkstra's Shortest path algorithm
      */
-    SurfaceMesh M1;
-    SurfaceMesh M2;
     int N;
     double epsilon;
-    public sampler(SurfaceMesh M1, SurfaceMesh M2,int N,double epsilon){
-        this.M1=M1;
-        this.M2=M2;
+    public sampler(int N,double epsilon){
         if(N!=-1) {
             this.N = N;
         }
@@ -50,7 +47,7 @@ public class sampler {
         }
         return curvature/area;
     }
-    private Vector_3 gaussCurvatureDerivative(Vertex<Point_3> v){
+    private static Vector_3 gaussCurvatureDerivative(Vertex<Point_3> v){
         Vector_3 angleGrad=new Vector_3(0,0,0);
         Halfedge<Point_3> e=v.getHalfedge();
         Halfedge<Point_3> f1=e.opposite;
@@ -79,40 +76,98 @@ public class sampler {
         } while(!f2.equals(e.next.opposite));
             return angleGrad;
     }
-
-    private ArrayList<int[]> findLocalGaussCurvature(double epsilon){
-        /* need to implement [desbrun et al. 2002] algorithm to find local maxima of Gauss Curvature
+    private static Vertex[] findLocalGaussCurvature(double epsilon,SurfaceMesh M1){
+        /*
         * Our methods gaussCurvatureDerivative can give us for each Vertex the derivative of Gauss Curvature.
-        * We will send back an index array with all selected points
+        * We will send back an array with all selected points
         * */
-        ArrayList<Integer> indexOfLocalMaximaM1=new ArrayList<Integer>();
-        ArrayList<Integer> indexOfLocalMaximaM2=new ArrayList<Integer>();
-        for(Vertex<Point_3> v:this.M1.polyhedron3D.vertices){
-            Vector_3 g=this.gaussCurvatureDerivative(v);
+        ArrayList<Vertex> indexOfLocalMaximaM1=new ArrayList<Vertex>();
+        for(Vertex<Point_3> v:M1.polyhedron3D.vertices){
+            Vector_3 g=sampler.gaussCurvatureDerivative(v);
             if((double)g.squaredLength()<epsilon) {
-                indexOfLocalMaximaM1.add(v.index);
+                indexOfLocalMaximaM1.add(v);
             }
         }
-        for(Vertex<Point_3> v:this.M2.polyhedron3D.vertices){
-            Vector_3 g=this.gaussCurvatureDerivative(v);
-            if((double)g.squaredLength()<epsilon) {
-                indexOfLocalMaximaM2.add(v.index);
-            }
-        }
-        ArrayList<int[]> indx=new ArrayList<int[]>();
-        int[] b=new int[indexOfLocalMaximaM1.size()];
+        Vertex[] v=new Vertex[indexOfLocalMaximaM1.size()];
         for(int i=0;i<indexOfLocalMaximaM1.size();i++){
-            b[i]=indexOfLocalMaximaM1.get(i);
+            v[i]=indexOfLocalMaximaM1.get(i);
         }
-        int[] c=new int[indexOfLocalMaximaM2.size()];
-        for(int i=0;i<indexOfLocalMaximaM2.size();i++){
-            c[i]=indexOfLocalMaximaM2.get(i);
-        }
-        indx.add(b);
-        indx.add(c);
-        return indx;
+        return v;
     }
-    private ArrayList<int[]> extendsSampling(ArrayList<int[]> idxOFGaussCurvLocalMax){
+    private static Vertex[] findNeighbour(Vertex v,SurfaceMesh m1){
+        /* gives back all neighbours vertex*/
+        Vertex[] neighbors=new Vertex[m1.polyhedron3D.vertexDegree(v)];
+        Halfedge e=v.getHalfedge();
+        Halfedge f=e.next.opposite;
+        int i=0;
+        while(!f.equals(e)){
+            neighbors[i]=f.opposite.vertex;
+            i++;
+            f=f.next.opposite;
+        }
+        neighbors[i]=f.opposite.vertex;
+        return neighbors;
+    }
+    private static Vertex fps(ArrayList<Vertex> initialSample,SurfaceMesh m1){
+        /* Realise farthest point search: from sourced points it looks for the geodesically most distant points
+        * It repeats the following algorithm:
+        * Initialisation:
+        *     each source vertex is put in the hash, with dist = 0.
+        *     all other vertex are put in the Hash, with dist= -1.(infinity)
+        *     try: 1) For each source points look for Reacheable points.
+        *                   if its dist is -1: then set new real dist and add this point to the new sources table.
+        *                   else if vertexCurrentDist<sources dist+dist(sources-vertex) do nothing
+        *                        else set new real min dist and add this point to the new sources table.
+        *    if sources is not empty:
+        *          4) Update the sources list.
+        *     if not: we have explore the whole graph, thus finish by looking at the max dist in visited sources.
+        *
+        *     We could also implement the algorithm the following way:
+        *     each source vertex is put in the hash, with dist = 0, and in a SortedHash relative to distance
+        *     all other vertex are put in the Hash, with dist= -1.(infinity)
+        *     While there are elements in the sortedHash:
+        *       We take the first (minimal distance) element, and expand it to neighbours, the same way as before.
+        *
+        * */
+        ArrayList<Vertex> sources=initialSample;
+        Hashtable<Vertex,Double> distTable=new Hashtable<>();
+        for(Vertex s:initialSample){
+            distTable.put(s,0.);
+        }
+        boolean continuer=true;
+        while(continuer) {
+            ArrayList<Vertex> newSource = new ArrayList<>();
+            for (Vertex source : sources) {
+                Vertex[] neighbors = sampler.findNeighbour(source, m1);
+                for (Vertex neighbor : neighbors) {
+                    double distance = (double) neighbor.getPoint().squareDistance(source.getPoint());
+                    if (distTable.get(neighbor) == -1) {
+                        distTable.replace(neighbor, distTable.get(source) + distance);
+                        newSource.add(neighbor);
+                    } else if (distTable.get(neighbor) > distTable.get(source) + distance) {
+                        distTable.replace(neighbor, distTable.get(source) + distance);
+                        newSource.add(neighbor);
+                    }
+                }
+            }
+            if (newSource.isEmpty()) {
+                continuer = false;
+            } else {
+                sources = newSource;
+            }
+        }
+        //each point's dist should be at the minimum distances from each initial sources.
+        double max=0;
+        Vertex vmax=null;
+        for(Vertex v:distTable.keySet()){
+            if(distTable.get(v)>max){
+                max=distTable.get(v);
+                vmax=v;
+            }
+        }
+        return vmax;
+    }
+    private Vertex[] extendsSampling(Vertex[] GaussCurvLocalMax,SurfaceMesh m1){
         /* Starting From local maxima of Gauss Curvature, it spreads to capture N points
         * TO DO:
         * 1) Implement FPS algorithm in case we don't have enough maxima of Gauss Curvature
@@ -122,14 +177,27 @@ public class sampler {
         *      distances from one point to other points.
         * 2) use this algorithm starting from the initial sample and extend while we haven't N sampled points...
         * */
-        if(idxOFGaussCurvLocalMax.get(0).length>=N && idxOFGaussCurvLocalMax.get(1).length>=N){
-            return idxOFGaussCurvLocalMax;
+        ArrayList<Vertex> v=new ArrayList<>();
+        if(GaussCurvLocalMax.length>=this.N){
+            return GaussCurvLocalMax;
         }
-        else throw new Error("need to be completed");
+        else{
+            for(int i=0;i<GaussCurvLocalMax.length;i++){
+                v.add(GaussCurvLocalMax[i]);
+            }
+            for(int i=0;i<this.N-GaussCurvLocalMax.length;i++){
+                v.add(sampler.fps(v,m1));
+            }
+        }
+        Vertex[] v2=new Vertex[v.size()];
+        for(int i=0;i<v.size();i++){
+            v2[i]=v.get(i);
+        }
+        return v2;
     }
-    public ArrayList<int[]> sample(){
+    public Vertex[] sample(SurfaceMesh m1){
         /* sample points */
-        ArrayList<int[]> sampled=this.extendsSampling(this.findLocalGaussCurvature(this.epsilon));
+        Vertex[] sampled=this.extendsSampling(sampler.findLocalGaussCurvature(this.epsilon,m1),m1);
         return sampled;
     }
 }
