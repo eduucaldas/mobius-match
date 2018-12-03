@@ -1,4 +1,6 @@
 import meshmanager.SurfaceMesh;
+import Jcg.polyhedron.Vertex;
+import java.beans.VetoableChangeListener;
 
 public class MidEdgeUniformization {
     /* This class intends to build the mid-edge mesh, then to parametrize it on the complex plane.
@@ -48,4 +50,10 @@ public class MidEdgeUniformization {
         throw new Error("to be implemented");
     }
 
+    private double[][] findProjection(Vertex[] sampledVertex) {
+        /* for each sampled vertex gives back the coordinate from the projected closest mid-edge vertex int the complexe plane
+         *
+         */
+        throw new Error("to be implemented");
+    }
 }
