@@ -94,7 +94,7 @@ public class Sampler {
         }
         return v;
     }
-    private static Vertex[] findNeighbour(Vertex v,SurfaceMesh m1){
+    public static Vertex[] findNeighbour(Vertex v,SurfaceMesh m1){
         /* gives back all neighbours vertex*/
         Vertex[] neighbors=new Vertex[m1.polyhedron3D.vertexDegree(v)];
         Halfedge e=v.getHalfedge();
@@ -107,6 +107,31 @@ public class Sampler {
         }
         neighbors[i]=f.opposite.vertex;
         return neighbors;
+    }
+    public static Hashtable<Vertex,Double> executefps(ArrayList<Vertex> sources, Hashtable<Vertex,Double> distTable,SurfaceMesh m1){
+        boolean continuer=true;
+        while(continuer) {
+            ArrayList<Vertex> newSource = new ArrayList<>();
+            for (Vertex source : sources) {
+                Vertex[] neighbors = Sampler.findNeighbour(source, m1);
+                for (Vertex neighbor : neighbors) {
+                    double distance = (double) neighbor.getPoint().squareDistance(source.getPoint());
+                    if (distTable.get(neighbor) == -1) {
+                        distTable.replace(neighbor, distTable.get(source) + distance);
+                        newSource.add(neighbor);
+                    } else if (distTable.get(neighbor) > distTable.get(source) + distance) {
+                        distTable.replace(neighbor, distTable.get(source) + distance);
+                        newSource.add(neighbor);
+                    }
+                }
+            }
+            if (newSource.isEmpty()) {
+                continuer = false;
+            } else {
+                sources = newSource;
+            }
+        }
+        return distTable;
     }
     private static Vertex fps(ArrayList<Vertex> initialSample,SurfaceMesh m1){
         /* Realise farthest point search: from sourced points it looks for the geodesically most distant points
@@ -134,28 +159,7 @@ public class Sampler {
         for(Vertex s:initialSample){
             distTable.put(s,0.);
         }
-        boolean continuer=true;
-        while(continuer) {
-            ArrayList<Vertex> newSource = new ArrayList<>();
-            for (Vertex source : sources) {
-                Vertex[] neighbors = Sampler.findNeighbour(source, m1);
-                for (Vertex neighbor : neighbors) {
-                    double distance = (double) neighbor.getPoint().squareDistance(source.getPoint());
-                    if (distTable.get(neighbor) == -1) {
-                        distTable.replace(neighbor, distTable.get(source) + distance);
-                        newSource.add(neighbor);
-                    } else if (distTable.get(neighbor) > distTable.get(source) + distance) {
-                        distTable.replace(neighbor, distTable.get(source) + distance);
-                        newSource.add(neighbor);
-                    }
-                }
-            }
-            if (newSource.isEmpty()) {
-                continuer = false;
-            } else {
-                sources = newSource;
-            }
-        }
+        distTable=Sampler.executefps(sources,distTable,m1);
         //each point's dist should be at the minimum distances from each initial sources.
         double max=0;
         Vertex vmax=null;
