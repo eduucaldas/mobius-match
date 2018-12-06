@@ -1,3 +1,5 @@
+package algo;
+
 import java.util.*;
 
 import Jcg.geometry.Point_3;
@@ -7,7 +9,7 @@ import Jcg.polyhedron.Vertex;
 import meshmanager.SurfaceMesh;
 
 public class Sampler {
-    /* The Sampler class enables us to do the first step, that is sampling from two meshes.
+    /* The algo.Sampler class enables us to do the first step, that is sampling from two meshes.
         Starting by sampling local maxima of Gauss Curvature by using a smoothest version of the angle-deficit formula [Desbrun et al. 2002]
         It then uses the Farthest Point Algorithm to take a spread of points, computing geodesic distances with an approximate algorithm based on
         Dijkstra's Shortest path algorithm

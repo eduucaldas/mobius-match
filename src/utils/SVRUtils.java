@@ -2,7 +2,10 @@ package utils;
 
 import Jcg.geometry.Point_3;
 import Jcg.geometry.Triangle_3;
+import Jcg.mesh.MeshBuilder;
+import Jcg.mesh.MeshLoader;
 import Jcg.mesh.SharedVertexRepresentation;
+import Jcg.polyhedron.Polyhedron_3;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -38,7 +41,6 @@ public class SVRUtils {
         }
         return new SharedVertexRepresentation(lt);
     }
-
     public static void svr2off(SharedVertexRepresentation svr, String filename){
         try (
                 FileWriter fw = new FileWriter(filename);

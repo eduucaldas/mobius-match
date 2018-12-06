@@ -1,9 +1,8 @@
+package algo;
+
 import Jcg.polyhedron.Vertex;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import javafx.beans.binding.DoubleExpression;
 import meshmanager.SurfaceMesh;
 
-import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
