@@ -1,5 +1,6 @@
 package test;
 
+import Jcg.geometry.Point_3;
 import Jcg.polyhedron.Polyhedron_3;
 import meshmanager.SurfaceMesh;
 import viewer.MeshViewer;
@@ -7,19 +8,21 @@ import Jcg.polyhedron.Vertex;
 import algo.Sampler;
 
 public class SamplerTest {
-    String name="OFF/cow.off";
-    private void test(){
-        MeshViewer viewer=new MeshViewer();
-        SurfaceMesh m1=new SurfaceMesh(viewer,this.name);
+    SurfaceMesh m1;
+    MeshViewer view;
+    Vertex[] vTbl;
+    public SamplerTest(SurfaceMesh m1,MeshViewer view){
+        this.m1=m1;
+        this.view=view;
         Sampler s=new Sampler(-1,-1);
-        Vertex[] vTbl=s.sample(m1);
-        Polyhedron_3 p=new Polyhedron_3();
-        for(Vertex v:vTbl) {
-            System.out.println(v.getPoint().toString());
-        }
+        this.vTbl=s.sample(m1);
+        System.out.println("Number of sampled points: "+this.vTbl.length);
     }
-    public static void main(String[] args) {
-       SamplerTest st=new SamplerTest();
-       st.test();
+    public void test(){
+        view.stroke(255,0,0);
+        for(Vertex v:vTbl) {
+            m1.drawVertex((Point_3) v.getPoint(),4);
+        }
+        view.stroke(1);
     }
 }

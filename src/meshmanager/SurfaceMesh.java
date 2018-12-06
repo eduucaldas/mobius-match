@@ -58,6 +58,16 @@ public class SurfaceMesh {
         view.sphere(s / 25f);
         view.translate(-x1, -y1, -z1);
     }
+    public void drawVertex(Point_3 p,float multiplyScale){
+        float s = (float) this.scaleFactor ;
+        float x1 = (float) p.getX().doubleValue() * s;
+        float y1 = (float) p.getY().doubleValue() * s;
+        float z1 = (float) p.getZ().doubleValue() * s;
+
+        view.translate(x1, y1, z1);
+        view.sphere(s * multiplyScale / 25f);
+        view.translate(-x1, -y1, -z1);
+    }
 
 
     /**
@@ -78,7 +88,7 @@ public class SurfaceMesh {
         Halfedge<Point_3> pEdge = h.getNext();
 
         Point_3 u = h.getOpposite().getVertex().getPoint();
-        view.noStroke();
+        //view.noStroke();
         view.fill(200, 200, 200, 255); // color of the triangle
 
         while (pEdge.getVertex() != h.getOpposite().getVertex()) {
@@ -96,7 +106,6 @@ public class SurfaceMesh {
      */
     public void draw(int type) {
         //this.drawAxis();
-
         // draw all faces
         if (type == 0) {
             view.beginShape(view.TRIANGLES);
@@ -123,6 +132,7 @@ public class SurfaceMesh {
 			this.drawVertex(v.getPoint());
 		}*/
         view.strokeWeight(1);
+        view.sampler.test();
     }
 
     /**
