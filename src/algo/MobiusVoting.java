@@ -1,3 +1,5 @@
+package algo;
+
 import Jcg.polyhedron.Vertex;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import com.sun.applet2.preloader.event.ErrorEvent;

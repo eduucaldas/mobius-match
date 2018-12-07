@@ -1,11 +1,12 @@
 package viewer;
 
 import processing.core.*;
-
+import test.*;
 import Jcg.geometry.*;
 import Jcg.polyhedron.*;
 import meshmanager.*;
 import parametrization.*;
+import test.SamplerTest;
 
 /**
  * A simple 3d viewer for visualizing surface meshes (based on Processing)
@@ -21,13 +22,14 @@ public class MeshViewer extends PApplet {
     int renderModes = 2; // number of rendering modes
     Polyhedron_3<Point_3> mesh;
     double tolerance = 0.00001;
+    public SamplerTest sampler;
 
-
-    //String filename="OFF/sphere.off";
+    //
+    String filename="OFF/bague.off";
     //String filename="OFF/cube.off";
     //String filename="OFF/star.off";
-    //String filename="OFF/horse1.off";
-    String filename = "OFF/tri_triceratops.off";
+    //String filename="OFF/cow.off";
+    //String filename = "OFF/tri_triceratops.off";
 
     public void setup() {
         size(800, 600, P3D);
@@ -36,6 +38,7 @@ public class MeshViewer extends PApplet {
         // open mesh from input file
         this.renderer = new SurfaceMesh(this, filename);
         this.mesh = this.renderer.polyhedron3D;
+        this.sampler=new SamplerTest(this.renderer,this);
 
         int index = 0;
         for (Vertex v : mesh.vertices) {
