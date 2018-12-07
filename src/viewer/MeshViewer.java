@@ -24,11 +24,12 @@ public class MeshViewer extends PApplet {
     double tolerance = 0.00001;
     public SamplerTest sampler;
 
-    //String filename="OFF/sphere.off";
+    //
+    String filename="OFF/bague.off";
     //String filename="OFF/cube.off";
     //String filename="OFF/star.off";
-    //String filename="OFF/horse1.off";
-    String filename = "OFF/tri_triceratops.off";
+    //String filename="OFF/cow.off";
+    //String filename = "OFF/tri_triceratops.off";
 
     public void setup() {
         size(800, 600, P3D);

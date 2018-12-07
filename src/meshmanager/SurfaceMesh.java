@@ -16,6 +16,11 @@ public class SurfaceMesh {
     MeshViewer view; // Processing 3d frame (where meshes are rendered)
     public Polyhedron_3<Point_3> polyhedron3D; // triangle mesh
 
+    public double getScaleFactor(){
+        return scaleFactor;
+    }
+
+
     /**
      * Create a surface mesh from an OFF file
      */
@@ -65,7 +70,8 @@ public class SurfaceMesh {
         float z1 = (float) p.getZ().doubleValue() * s;
 
         view.translate(x1, y1, z1);
-        view.sphere(s * multiplyScale / 25f);
+        view.sphere(multiplyScale);
+        //view.sphere(s * multiplyScale / 25f);
         view.translate(-x1, -y1, -z1);
     }
 

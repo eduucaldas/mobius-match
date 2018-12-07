@@ -12,7 +12,7 @@ public class Sampler {
     /* The algo.Sampler class enables us to do the first step, that is sampling from two meshes.
         Starting by sampling local maxima of Gauss Curvature by using a smoothest version of the angle-deficit formula [Desbrun et al. 2002]
         It then uses the Farthest Point Algorithm to take a spread of points, computing geodesic distances with an approximate algorithm based on
-        Dijkstra's Shortest path algorithm
+        Dijkstra's Shortest path algorithm.
      */
     int N;
     double epsilon;
@@ -157,14 +157,19 @@ public class Sampler {
         *       We take the first (minimal distance) element, and expand it to neighbours, the same way as before.
         *
         * */
-        ArrayList<Vertex> sources=initialSample;
         Hashtable<Vertex,Double> distTable=new Hashtable<>();
         for(Vertex s:m1.polyhedron3D.vertices){
             distTable.put(s,-1.);
         }
-        for(Vertex s:initialSample){
-            distTable.replace(s,0.);
+        if(initialSample.size()>0) {
+            for (Vertex s : initialSample) {
+                distTable.replace(s, 0.);
+            }
         }
+        else{
+            distTable.replace(m1.polyhedron3D.vertices.get(0),0.);
+        }
+        ArrayList<Vertex> sources=initialSample;
         distTable=Sampler.executefps(sources,distTable,m1);
         //each point's dist should be at the minimum distances from each initial sources.
         double max=0;
@@ -189,15 +194,19 @@ public class Sampler {
         * */
         ArrayList<Vertex> v=new ArrayList<>();
         if(GaussCurvLocalMax.length>=this.N){
-            return GaussCurvLocalMax;
+            Vertex[] v2=new Vertex[this.N];
+            for(int i=0;i<N;i++){
+                v2[i]=GaussCurvLocalMax[i];
+            }
+            return v2;
         }
         else{
-            System.out.println("");
+            System.out.println(" ");
             System.out.println(" number of Gauss Max: "+GaussCurvLocalMax.length);
             for(int i=0;i<GaussCurvLocalMax.length;i++){
                 v.add(GaussCurvLocalMax[i]);
             }
-            for(int i=0;i<this.N-GaussCurvLocalMax.length;i++){
+            for(int i=0;i<Math.min(this.N,m1.polyhedron3D.vertices.size())-GaussCurvLocalMax.length;i++){
                 v.add(Sampler.fps(v,m1));
             }
         }
@@ -209,7 +218,13 @@ public class Sampler {
     }
     public Vertex[] sample(SurfaceMesh m1){
         /* sample points */
-        Vertex[] sampled=this.extendsSampling(Sampler.findLocalGaussCurvature(this.epsilon,m1),m1);
+        Vertex[] GaussCurvLocalMax;
+        this.epsilon/=10;
+        do {
+            this.epsilon*=10;
+            GaussCurvLocalMax = Sampler.findLocalGaussCurvature(this.epsilon, m1);
+        }while(GaussCurvLocalMax.length==0);
+        Vertex[] sampled=this.extendsSampling(GaussCurvLocalMax,m1);
         return sampled;
     }
 }

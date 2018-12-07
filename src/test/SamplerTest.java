@@ -16,6 +16,7 @@ public class SamplerTest {
         this.view=view;
         Sampler s=new Sampler(-1,-1);
         this.vTbl=s.sample(m1);
+        System.out.println("Scale factor is "+m1.getScaleFactor());
         System.out.println("Number of sampled points: "+this.vTbl.length);
     }
     public void test(){
@@ -23,6 +24,6 @@ public class SamplerTest {
         for(Vertex v:vTbl) {
             m1.drawVertex((Point_3) v.getPoint(),4);
         }
-        view.stroke(1);
+        view.strokeWeight(1);
     }
 }
