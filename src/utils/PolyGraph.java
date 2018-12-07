@@ -69,6 +69,20 @@ public class PolyGraph {
         return edge;
     }
 
+    private static void unitTestComputeEdges(String filename){
+        // They should be equal
+        double[][] edgeWeightsViaPolyhedron = computeEdges(MeshLoader.getSurfaceMesh(filename));
+        // First let`s just compare their sum, should be enough
+        double ew;
+        for (int i = 0; i < edgeWeightsViaPolyhedron.length; i++) {
+            for (int j = 0; j < edgeWeightsViaPolyhedron[0].length; j++) {
+                ew = edgeWeightsViaPolyhedron[i][j];
+                System.out.print(ew + " ");
+            }
+            System.out.println();
+        }
+    }
+
     private static double[][] floydWarshall(double[][] edges){
         int nVert = edges.length;
         double[][] dist = new double[nVert][nVert];
@@ -114,6 +128,9 @@ public class PolyGraph {
     }
 
     public static void main(String[] args) {
+        String uTComputeEdgesFilename = "OFF/tetrahedron.off";
+        unitTestComputeEdges(uTComputeEdgesFilename);
+
         String findCutFaceFilename = "OFF/tri_triceratops.off";
         Polyhedron_3<Point_3> triceratopsPoly = MeshLoader.getSurfaceMesh(findCutFaceFilename);
         Face<Point_3> cutFace = findCutFace(triceratopsPoly);
