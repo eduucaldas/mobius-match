@@ -43,7 +43,6 @@ public class PolyGraph {
             edge[i][i] = 0.;
         }
 
-
         Point_3[] vertexCoords;
         int[] vertexIds;
 

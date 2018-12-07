@@ -9,7 +9,8 @@ import java.util.ArrayList;
 
 public class MobiusVoting {
     /* Once the parametrization on the complexe plane is done we use this Voting class to determines which sampled points are corresponding the most.
-     * c1 and c2 represents the coordinates from the sampled points in the complex plane. Those coordinates are obtained associating each point with its nearest mid-edge vertex then projecting on the complex plane.
+     * c1 and c2 represents the coordinates from the sampled points in the complex plane.
+     * Those coordinates are obtained associating each point with its nearest mid-edge vertex then projecting on the complex plane.
      *
      */
     double[][] c1;
@@ -225,6 +226,4 @@ public class MobiusVoting {
         }
         return CorrespondenceMatrix;
     }
-
-
 }
