@@ -15,7 +15,10 @@ public class SurfaceMesh {
     double scaleFactor = 60; // scaling factor: useful for 3d rendering
     MeshViewer view; // Processing 3d frame (where meshes are rendered)
     public Polyhedron_3<Point_3> polyhedron3D; // triangle mesh
-
+    public boolean displaySampled;
+    public boolean displayFound;
+    public Vertex[] correspondence;
+    public Vertex[] sampled;
     public double getScaleFactor(){
         return scaleFactor;
     }
@@ -26,7 +29,8 @@ public class SurfaceMesh {
      */
     public SurfaceMesh(MeshViewer view, String filename) {
         this.view = view;
-
+        this.displayFound=false;
+        this.displaySampled=false;
         this.polyhedron3D = MeshLoader.getSurfaceMesh(filename);
 
         //System.out.println(polyhedron3D.verticesToString());
@@ -105,8 +109,6 @@ public class SurfaceMesh {
             pEdge = pEdge.getNext();
         }
     }
-
-
     /**
      * Draw the entire mesh
      */
@@ -138,9 +140,26 @@ public class SurfaceMesh {
 			this.drawVertex(v.getPoint());
 		}*/
         view.strokeWeight(1);
-        view.sampler.test();
-    }
 
+        if(this.displaySampled) {
+            this.displaySampled();
+        }
+        if(this.displayFound){
+            this.displayFound();
+        }
+    }
+    private void displaySampled(){
+        view.stroke(255,0,0);
+        for(Vertex v:sampled) {
+            this.drawVertex((Point_3) v.getPoint(), 4);
+        }
+    }
+    private void displayFound(){
+        view.stroke(0,255,0);
+        for(Vertex v:correspondence) {
+            this.drawVertex((Point_3) v.getPoint(), 4);
+        }
+    }
     /**
      * Draw the X, Y and Z axis
      */

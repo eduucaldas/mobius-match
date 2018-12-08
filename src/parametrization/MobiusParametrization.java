@@ -39,7 +39,7 @@ public class MobiusParametrization {
         int n=m1.polyhedron3D.vertices.size();
         int nIn = n-3; // matrix size
         Halfedge faceEdge=cutFace.getEdge();
-        boolean[] isInner=new boolean[n];
+        this.isInner=new boolean[n];
         this.isInitialPoints=new boolean[n];
         for(int i=0;i<n;i++){
             this.isInitialPoints[i]=false;
@@ -94,6 +94,7 @@ public class MobiusParametrization {
         U = new SparseDoubleMatrix2D(nIn, nIn); // create a sparse matrix of size nInxnIn
         for (Vertex v : m1.polyhedron3D.vertices) {
             if(isInner[v.index]){
+                U.set(vertexOrder[v.index],vertexOrder[v.index],1);
                 //First browse of indexes => computes edge bases angles for each neighbor vertex, and compute their sum
                 Halfedge e=v.getHalfedge().opposite;
                 Halfedge f=e;
