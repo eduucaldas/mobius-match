@@ -1,5 +1,6 @@
 package viewer;
 
+
 import algo.runAlgo;
 import processing.core.*;
 import Jcg.geometry.*;
@@ -14,8 +15,11 @@ import test.SamplerTest;
  *
  * We modified this MeshViewer class to fit to our projects need.
  */
-public class MeshViewer extends PApplet {
+public class ParametrizationViewer extends MeshViewer {
 
+    public SurfaceMesh m1;
+    public SurfaceMesh m2;
+    /*
     public SurfaceMesh m1; // 3d surface mesh renderer
     public SurfaceMesh m2;
     int linAlgLibrary = 0;
@@ -27,21 +31,19 @@ public class MeshViewer extends PApplet {
     public SamplerTest sampler;
     String filename;
     public runAlgo vm;
-    int drawnMesh=0;
+    int drawnMesh=0;*/
 
-    String filename1="OFF/cow.off";
-    //String filename2="OFF/tri_triceratops.off";
-    String filename2="OFF/cow.off";
+    String filename1="OFF/parametrize1.off";
+    String filename2="OFF/parametrize2.off";
+
     public void setup() {
         size(800, 600, P3D);
         ArcBall arcball = new ArcBall(this);
-
         // open mesh from input file
         this.m1 = new SurfaceMesh(this, filename1);
         //this.mesh = this.m1.polyhedron3D;
         this.m2 = new SurfaceMesh(this,filename2);
         //this.sampler=new SamplerTest(this.renderer,this);
-
         int index = 0;
         for (Vertex v : m1.polyhedron3D.vertices) {
             v.index = index;
@@ -52,18 +54,19 @@ public class MeshViewer extends PApplet {
             v.index=index;
             index++;
         }
-        vm=new runAlgo(this);
+        //vm=new runAlgo(this);
     }
     public void draw() {
         background(255);
 //        this.lights();
+        /*
         directionalLight(101, 204, 255, -1, 0, 0);
         directionalLight(51, 102, 126, 0, -1, 0);
         directionalLight(51, 102, 126, 0, 0, -1);
         directionalLight(102, 50, 126, 1, 0, 0);
         directionalLight(51, 50, 102, 0, 1, 0);
         directionalLight(51, 50, 102, 0, 0, 1);
-
+        */
         translate(width / 2.f, height / 2.f, -1 * height / 2.f);
         this.strokeWeight(1);
         stroke(150, 150, 150);
@@ -74,16 +77,6 @@ public class MeshViewer extends PApplet {
     }
     public void keyPressed() {
         switch (key) {
-            case ('e'):
-            case ('E'):
-                //We execute our algorythm if the e or E button is pressed.
-                this.vm.executeAlgorithm();
-                break;
-            case ('d'):
-            case ('D'):
-                //execute beginnin of algorithm in order to visualize the parametrized plane.
-                this.vm.executeDebug();
-                break;
             case('m'):
             case('M'):
                 this.drawnMesh=1-this.drawnMesh;
@@ -103,9 +96,9 @@ public class MeshViewer extends PApplet {
     /**
      * For running the PApplet as Java application
      */
-    public static void main(String[] args) {
+    public static void main() {
         //PApplet pa=new MeshViewer();
         //pa.setSize(400, 400);
-        PApplet.main(new String[]{"viewer.MeshViewer"});
+        PApplet.main(new String[]{"viewer.ParametrizationViewer"});
     }
 }

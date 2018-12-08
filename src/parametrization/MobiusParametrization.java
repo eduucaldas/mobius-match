@@ -97,7 +97,6 @@ public class MobiusParametrization {
         for (Vertex v : m1.polyhedron3D.vertices) {
             if(isInner[v.index]){
                 U.set(vertexOrder[v.index],vertexOrder[v.index],1.);
-                System.out.print(" "+vertexOrder[v.index]);
                 //First browse of indexes => computes edge bases angles for each neighbor vertex, and compute their sum
                 Halfedge e=v.getHalfedge().opposite;
                 Halfedge f=e;
@@ -305,11 +304,35 @@ public class MobiusParametrization {
         return result;
     }
 
+    public double[][] getTotalProjection(){
+        Hashtable<Halfedge,double[]> planarEmbed=this.planarEmbeding();
+        double[][] projection=new double[planarEmbed.size()][2];
+        for(int i=0;i<planarEmbed.size();i++){
+            projection[i]=planarEmbed.get(this.findClosestMidEdgeVertex(this.m1.polyhedron3D.halfedges.get(i).getVertex()));
+        }
+        return projection;
+    }
+    private Halfedge findClosestMidEdgeVertex(Vertex v){
+        Halfedge e=v.getHalfedge();
+        Halfedge f=e.opposite;
+        Halfedge selectedEdge=f;
+        double distMin=-1;
+        do{
+            double dist=(double)f.getVertex().getPoint().squareDistance(v.getPoint());
+            if(distMin==-1 || dist<distMin){
+                distMin=dist;
+                selectedEdge=f;
+            }
+            f=f.opposite.next.opposite;
+        }while(f!=e.opposite);
+        return selectedEdge;
+    }
     public double[][] getProjectionFromSampled(Vertex[] sample){
         Hashtable<Halfedge,double[]> planarEmbed=this.planarEmbeding();
         double[][] projection=new double[sample.length][2];
         for(int i=0;i<sample.length;i++){
-            projection[i]=planarEmbed.get(sample[i].getHalfedge());
+            //we need to find closest mid-edge vertex.
+            projection[i]=planarEmbed.get(this.findClosestMidEdgeVertex(sample[i]));
         }
         return projection;
     }

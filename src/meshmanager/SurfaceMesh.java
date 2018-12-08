@@ -19,10 +19,11 @@ public class SurfaceMesh {
     public boolean displayFound;
     public Vertex[] correspondence;
     public Vertex[] sampled;
+    public Face cutFace;
+    public boolean displayCutFace;
     public double getScaleFactor(){
         return scaleFactor;
     }
-
 
     /**
      * Create a surface mesh from an OFF file
@@ -31,6 +32,7 @@ public class SurfaceMesh {
         this.view = view;
         this.displayFound=false;
         this.displaySampled=false;
+        this.displayCutFace=false;
         this.polyhedron3D = MeshLoader.getSurfaceMesh(filename);
 
         //System.out.println(polyhedron3D.verticesToString());
@@ -147,6 +149,19 @@ public class SurfaceMesh {
         if(this.displayFound){
             this.displayFound();
         }
+        if(this.displayCutFace){
+            this.displayCutFace();
+        }
+    }
+    private void displayCutFace(){
+        Halfedge e=this.cutFace.getEdge();
+        Halfedge f=e.next;
+        view.stroke(0,0,255);
+        while (f!=e) {
+            this.drawVertex((Point_3)f.vertex.getPoint(),6);
+            f=f.next;
+        }
+
     }
     private void displaySampled(){
         view.stroke(255,0,0);

@@ -1,11 +1,17 @@
 package algo;
 
+import Jcg.geometry.Point_3;
+import Jcg.mesh.MeshBuilder;
+import Jcg.mesh.MeshLoader;
+import Jcg.mesh.SharedVertexRepresentation;
 import Jcg.polyhedron.Face;
 import Jcg.polyhedron.Vertex;
 import meshmanager.SurfaceMesh;
 import parametrization.MobiusParametrization;
 import utils.PolyGraph;
+import utils.SVRUtils;
 import viewer.MeshViewer;
+import viewer.ParametrizationViewer;
 
 import java.util.ArrayList;
 
@@ -13,47 +19,71 @@ public class runAlgo {
     MeshViewer mV;
     double[][] correspondences;
 
+    SurfaceMesh m1;
+    SurfaceMesh m2;
+    Vertex[] sampled1;
+    Vertex[] sampled2;
+    double[][] c1;
+    double[][] c2;
+
     public runAlgo(MeshViewer mv){
         this.mV=mv;
     }
-    public void executeAlgorithm(){
+
+    private void sample(){
         System.out.println("Parametrization of first mesh");
-        SurfaceMesh m1= mV.m1;
+        m1= mV.m1;
         Sampler sampler1=new Sampler(-1,-1);
         System.out.println("Sampling mesh 1");
-        Vertex[] sampled1=sampler1.sample(m1);
+        sampled1=sampler1.sample(m1);
         m1.sampled=sampled1;
         m1.displaySampled=true;
         System.out.println("Finished sampling mesh 1");
 
-        SurfaceMesh m2= mV.m2;
+        m2= mV.m2;
         Sampler sampler2=new Sampler(-1,-1);
         System.out.println("Sampling mesh 2");
-        Vertex[] sampled2=sampler2.sample(m2);
+        sampled2=sampler2.sample(m2);
         m2.sampled=sampled2;
         m2.displaySampled=true;
         System.out.println("Finished sampling mesh 2");
-
-        System.out.println("Parametrizing 1:");
-        System.out.println("finding cut face");
+    }
+    private void findCutFace(){
+        System.out.println("finding cut face for 1");
         Face cut1=PolyGraph.findCutFace(m1.polyhedron3D);
-
+        m1.cutFace=cut1;
+        m1.displayCutFace=true;
         System.out.println("found cut face");
-        MobiusParametrization mp1=new MobiusParametrization(m1,cut1,0.001);
-        System.out.println("finding projection sampled");
-        double[][] c1=mp1.getProjectionFromSampled(sampled1);
 
-        System.out.println("Ended parametrization of 1");
-
-        System.out.println("Parametrizing 2:");
-        System.out.println("finding cut face");
+        System.out.println("finding cut face for 2");
         Face cut2=PolyGraph.findCutFace(m2.polyhedron3D);
-        //Face cut2=m2.polyhedron3D.facets.get(0);
-        MobiusParametrization mp2=new MobiusParametrization(m2,cut2,0.001);
-        System.out.println("finding projection sampled");
-        double[][] c2=mp2.getProjectionFromSampled(sampled2);
-        System.out.println("Ended parametrization of 2");
+        m2.cutFace=cut2;
+        m2.displayCutFace=true;
 
+    }
+    private void parametrizeDebug(){
+        MobiusParametrization mp1=new MobiusParametrization(m1,m1.cutFace,0.001);
+        System.out.println("finding projection sampled");
+        c1=mp1.getTotalProjection();
+        System.out.println("Ended parametrization of 1");
+        //Face cut2=m2.polyhedron3D.facets.get(0);
+        MobiusParametrization mp2=new MobiusParametrization(m2,m2.cutFace,0.001);
+        System.out.println("finding projection sampled");
+        c2=mp2.getTotalProjection();
+        System.out.println("Ended parametrization of 2");
+    }
+    private void parametrize(){
+        MobiusParametrization mp1=new MobiusParametrization(m1,m1.cutFace,0.001);
+        System.out.println("finding projection sampled");
+        c1=mp1.getProjectionFromSampled(sampled1);
+        System.out.println("Ended parametrization of 1");
+        //Face cut2=m2.polyhedron3D.facets.get(0);
+        MobiusParametrization mp2=new MobiusParametrization(m2,m2.cutFace,0.001);
+        System.out.println("finding projection sampled");
+        c2=mp2.getProjectionFromSampled(sampled2);
+        System.out.println("Ended parametrization of 2");
+    }
+    private void mobiusVote(){
         MobiusVoting mv=new MobiusVoting(c1,c2,-1,0.001);
         System.out.println("Computing correspondences matrix");
         correspondences=mv.createConfidenceMatrix(100);
@@ -64,6 +94,8 @@ public class runAlgo {
             System.out.println("");
         }*/
         System.out.println("Computing fuzzy matrix and giving corresponding vertex");
+    }
+    private void establishCorrespondenceProcessor(){
         CorrespondenceProcessor cp=new CorrespondenceProcessor(m1,m2,0.7);
         ArrayList<Vertex[]> aV=cp.computeFuzzyCorrespondenceMatrix(correspondences);
         Vertex[] v1=new Vertex[aV.size()];
@@ -78,5 +110,32 @@ public class runAlgo {
         m2.correspondence=v2;
         m1.displayFound=true;
         m2.displayFound=true;
+    }
+    public void executeAlgorithm(){
+        this.sample();
+        this.findCutFace();
+        this.parametrize();
+        this.mobiusVote();
+        this.establishCorrespondenceProcessor();
+    }
+    public void executeDebug(){
+        this.sample();
+        this.findCutFace();
+        this.parametrizeDebug();
+        SurfaceMesh p1=m1;
+        SurfaceMesh p2=m2;
+        //Projecting the surfadce mesh in the complexe plane, then saving its parametrization to run a new applet on it
+        for(int i=0;i<c1.length;i++){
+            p1.polyhedron3D.halfedges.get(i).getVertex().setPoint(new Point_3(c1[i][0],c1[i][1],0));
+        }
+        for(int i=0;i<c2.length;i++){
+            p2.polyhedron3D.halfedges.get(i).getVertex().setPoint(new Point_3(c1[i][0],c1[i][1],0));
+        }
+        SharedVertexRepresentation svr1=new SharedVertexRepresentation(p1.polyhedron3D);
+        SharedVertexRepresentation svr2=new SharedVertexRepresentation(p2.polyhedron3D);
+        SVRUtils.svr2off(svr1,"OFF/parametrize1.off");
+        SVRUtils.svr2off(svr2,"OFF/parametrize2.off");
+
+        ParametrizationViewer.main();
     }
 }

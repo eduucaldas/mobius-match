@@ -82,8 +82,9 @@ public class SVRUtils {
     }
 
     private static String point2str(Point_3 p){
-        DoubleFunction<String> format = x -> String.format("%.6f", x);
-        return format.apply(p.x) + " " + format.apply(p.y) + " " + format.apply(p.z);
+        //DoubleFunction<String> format = x -> String.format("%.6f", x);
+        //return format.apply(p.x) + " " + format.apply(p.y) + " " + format.apply(p.z);
+        return p.x+" "+p.y+" "+p.z;
     }
 
 
