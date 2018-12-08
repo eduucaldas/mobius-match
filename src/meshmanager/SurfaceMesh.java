@@ -155,8 +155,14 @@ public class SurfaceMesh {
         }
     }
     private void displayFound(){
-        view.stroke(0,255,0);
-        for(Vertex v:correspondence) {
+        //view.stroke(0,255,0);
+
+        for(int i=0;i<correspondence.length;i++) {
+            Vertex v=correspondence[i];
+            if(i%2==0)
+                view.stroke(i*255/(correspondence.length-1),i*255/(correspondence.length-1),0);
+            else
+                view.stroke(0,i*255/(correspondence.length-1),i*255/(correspondence.length-1));
             this.drawVertex((Point_3) v.getPoint(), 4);
         }
     }

@@ -30,8 +30,8 @@ public class MeshViewer extends PApplet {
     int drawnMesh=0;
 
     String filename1="OFF/cow.off";
-    String filename2="OFF/tri_triceratops.off";
-
+    //String filename2="OFF/tri_triceratops.off";
+    String filename2="OFF/cow.off";
     public void setup() {
         size(800, 600, P3D);
         ArcBall arcball = new ArcBall(this);
@@ -95,6 +95,10 @@ public class MeshViewer extends PApplet {
             case('M'):
                 this.drawnMesh=1-this.drawnMesh;
                 break;
+            case('s'):
+            case('S'):
+                this.m1.displaySampled=!this.m1.displaySampled;
+                this.m2.displaySampled=!this.m2.displaySampled;
             default:
                 break;
         }

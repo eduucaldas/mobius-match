@@ -87,7 +87,6 @@ public class Sampler {
         for(Vertex<Point_3> v:M1.polyhedron3D.vertices){
             Vector_3 g=Sampler.gaussCurvatureDerivative(v);
             if((double)g.squaredLength()<epsilon) {
-                System.out.print(g.x+" "+g.y+" "+g.z);
                 indexOfLocalMaximaM1.add(v);
             }
         }
@@ -201,7 +200,6 @@ public class Sampler {
             return v2;
         }
         else{
-            System.out.println(" ");
             System.out.println(" number of Gauss Max: "+GaussCurvLocalMax.length);
             for(int i=0;i<GaussCurvLocalMax.length;i++){
                 v.add(GaussCurvLocalMax[i]);

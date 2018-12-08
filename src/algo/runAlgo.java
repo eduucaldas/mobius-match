@@ -2,13 +2,8 @@ package algo;
 
 import Jcg.polyhedron.Face;
 import Jcg.polyhedron.Vertex;
-import algo.CorrespondenceProcessor;
-import algo.MobiusVoting;
-import algo.Sampler;
-import javafx.scene.shape.Mesh;
 import meshmanager.SurfaceMesh;
 import parametrization.MobiusParametrization;
-import processing.core.PApplet;
 import utils.PolyGraph;
 import viewer.MeshViewer;
 
@@ -33,7 +28,7 @@ public class runAlgo {
 
         SurfaceMesh m2= mV.m2;
         Sampler sampler2=new Sampler(-1,-1);
-        System.out.println("Sampling mesh 1");
+        System.out.println("Sampling mesh 2");
         Vertex[] sampled2=sampler2.sample(m2);
         m2.sampled=sampled2;
         m2.displaySampled=true;
@@ -42,25 +37,34 @@ public class runAlgo {
         System.out.println("Parametrizing 1:");
         System.out.println("finding cut face");
         Face cut1=PolyGraph.findCutFace(m1.polyhedron3D);
+
         System.out.println("found cut face");
         MobiusParametrization mp1=new MobiusParametrization(m1,cut1,0.001);
         System.out.println("finding projection sampled");
         double[][] c1=mp1.getProjectionFromSampled(sampled1);
+
         System.out.println("Ended parametrization of 1");
 
         System.out.println("Parametrizing 2:");
         System.out.println("finding cut face");
         Face cut2=PolyGraph.findCutFace(m2.polyhedron3D);
+        //Face cut2=m2.polyhedron3D.facets.get(0);
         MobiusParametrization mp2=new MobiusParametrization(m2,cut2,0.001);
         System.out.println("finding projection sampled");
-        double[][] c2=mp2.getProjectionFromSampled(sampled1);
+        double[][] c2=mp2.getProjectionFromSampled(sampled2);
         System.out.println("Ended parametrization of 2");
 
         MobiusVoting mv=new MobiusVoting(c1,c2,-1,0.001);
         System.out.println("Computing correspondences matrix");
         correspondences=mv.createConfidenceMatrix(100);
+        /*for(int i=0;i<correspondences.length;i++){
+            for(int j=0;j<correspondences[i].length;j++){
+                System.out.print(correspondences[i][j]+" ");
+            }
+            System.out.println("");
+        }*/
         System.out.println("Computing fuzzy matrix and giving corresponding vertex");
-        CorrespondenceProcessor cp=new CorrespondenceProcessor(m1,m2,0.001);
+        CorrespondenceProcessor cp=new CorrespondenceProcessor(m1,m2,0.7);
         ArrayList<Vertex[]> aV=cp.computeFuzzyCorrespondenceMatrix(correspondences);
         Vertex[] v1=new Vertex[aV.size()];
         Vertex[] v2=new Vertex[aV.size()];
@@ -68,6 +72,7 @@ public class runAlgo {
             v1[i]= aV.get(i)[0];
             v2[i]=aV.get(i)[1];
         }
+        System.out.println("Found : "+v1.length+" coresponding vertex in v1 and "+v2.length+" corresponding vertex in v2");
         /*indicate to SurfaceMesh the vertex corresponding to correspondences*/
         m1.correspondence=v1;
         m2.correspondence=v2;

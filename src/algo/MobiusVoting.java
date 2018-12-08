@@ -26,7 +26,7 @@ public class MobiusVoting {
         this.c1 = c1;
         this.c2 = c2;
         if (threshold != -1) this.K = threshold;
-        else this.K = (c1.length * 40) / 100;
+        else this.K = (c1.length * 10) / 100;
         this.epsilon = epsilon;
     }
 
@@ -68,7 +68,7 @@ public class MobiusVoting {
                 boolean isValid=false;
                 int idx=0;
                 while(!isValid) {
-                    idx= (int) Math.random() * length;
+                    idx= (int) (Math.random() * length);
                     isValid = true;
                     for (int h = 0; h < j; h++) {
                         if (sampled[i][h] == idx) {
@@ -103,12 +103,10 @@ public class MobiusVoting {
         mobTransform[0][1]=this.complexDiff(this.complexProd(c1z1,c1z3),this.complexProd(c1z2,c1z1));
         mobTransform[0][2]=this.complexDiff(c1z2,c1z1);
         mobTransform[0][3]=this.complexDiff(this.complexProd(c1z3,c1z1),this.complexProd(c1z3,c1z2));
-
         mobTransform[1][0]=this.complexDiff(c2z2,c2z3);
         mobTransform[1][1]=this.complexDiff(this.complexProd(c2z1,c2z3),this.complexProd(c2z2,c2z1));
         mobTransform[1][2]=this.complexDiff(c2z2,c2z1);
         mobTransform[1][3]=this.complexDiff(this.complexProd(c2z3,c2z1),this.complexProd(c2z3,c2z2));
-
         return mobTransform;
     }
     private void applyMobius(double[][][] Mobius) {
@@ -131,19 +129,18 @@ public class MobiusVoting {
     private int[] findNearestNeighbor(int idx,boolean isC1){
         /* a greedy algorithm to find nearest neighbors*/
         double maxDist=-1;
-        int index=-1;
-        ArrayList<Integer> additionalIndex=new ArrayList<>();
+        ArrayList<Integer> indexesArray=new ArrayList<>();
         if(isC1){
             //we need to look in transformedc2 to find the nearest neighbor of transformedc1[idx]!
             for(int i=0;i<this.transformedc2.length;i++){
                double dist=this.complexDist(transformedc1[idx],this.transformedc2[i]);
                if(dist<maxDist || maxDist==-1) {
-                   index = i;
+                   indexesArray.clear();
                    maxDist = dist;
-                   additionalIndex.clear();
+                   indexesArray.add(i);
                }
                else if(dist==maxDist){
-                   additionalIndex.add(i);
+                   indexesArray.add(i);
                }
             }
         }
@@ -152,18 +149,18 @@ public class MobiusVoting {
             for(int i=0;i<this.transformedc1.length;i++){
                 double dist=this.complexDist(transformedc2[idx],this.transformedc1[i]);
                 if(dist<maxDist || maxDist==-1) {
-                    index = i;
+                    indexesArray.clear();
                     maxDist = dist;
-                    additionalIndex.clear();
+                    indexesArray.add(i);
                 }
                 else if(dist==maxDist){
-                    additionalIndex.add(i);
+                    indexesArray.add(i);
                 }
             }
         }
-        int[] indexes=new int[additionalIndex.size()];
-        for(int i=0;i<additionalIndex.size();i++){
-            indexes[i]=additionalIndex.get(i);
+        int[] indexes=new int[indexesArray.size()];
+        for(int i=0;i<indexesArray.size();i++){
+            indexes[i]=indexesArray.get(i);
         }
         return indexes;
     }
@@ -182,13 +179,13 @@ public class MobiusVoting {
         for(int i=0;i<this.transformedc2.length;i++){
             c2NearestNeighbor.add(this.findNearestNeighbor(i,false));
         }
-        //build mutually nearest closet number least.
+        //build mutually nearest closet number list.
         ArrayList<int[]> mutuallyClosest=new ArrayList<>();
         for(int i=0;i<c1NearestNeighbor.size();i++){
             for(int j:c1NearestNeighbor.get(i)){
                 for(int h:c2NearestNeighbor.get(j)){
                     if(h==i){
-                        mutuallyClosest.add(new int[]{i,h});
+                        mutuallyClosest.add(new int[]{i,j});
                     }
                 }
             }
@@ -210,7 +207,7 @@ public class MobiusVoting {
             E=E/mutuallyClosestPairs.size();
             for(int i=0;i<mutuallyClosestPairs.size();i++){
                 int[] pair=mutuallyClosestPairs.get(i);
-                this.CorrespondenceMatrix[pair[0]][pair[1]]+=1/(this.epsilon+E);
+                this.CorrespondenceMatrix[pair[0]][pair[1]]+=1./(this.epsilon+E);
             }
         }
     }

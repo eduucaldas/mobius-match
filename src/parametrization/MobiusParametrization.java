@@ -16,6 +16,7 @@ import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 import meshmanager.SurfaceMesh;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 
@@ -43,7 +44,7 @@ public class MobiusParametrization {
         this.isInitialPoints=new boolean[n];
         for(int i=0;i<n;i++){
             this.isInitialPoints[i]=false;
-            this.isInner[i]=false;
+            this.isInner[i]=true;
         }
         for(int i=0;i<3;i++){
             if(i==0) {
@@ -92,9 +93,11 @@ public class MobiusParametrization {
         long startTime = System.nanoTime(), endTime; // for evaluating time performances
 
         U = new SparseDoubleMatrix2D(nIn, nIn); // create a sparse matrix of size nInxnIn
+        this.Sum=new double[nIn];
         for (Vertex v : m1.polyhedron3D.vertices) {
             if(isInner[v.index]){
-                U.set(vertexOrder[v.index],vertexOrder[v.index],1);
+                U.set(vertexOrder[v.index],vertexOrder[v.index],1.);
+                System.out.print(" "+vertexOrder[v.index]);
                 //First browse of indexes => computes edge bases angles for each neighbor vertex, and compute their sum
                 Halfedge e=v.getHalfedge().opposite;
                 Halfedge f=e;
@@ -138,6 +141,7 @@ public class MobiusParametrization {
         /* SOLVE for U using the PColt implementation to have sparse matrix
         * */
         DoubleMatrix2D U=this.createUMatrix();
+        //System.out.println(U.toString());
         double[] b=this.createsRightHandTerm();
         double[] result=this.solve(U,b,precision);
         return result;
@@ -189,7 +193,30 @@ public class MobiusParametrization {
 
         return x;
     }
+    private void updateSurround(Hashtable<Halfedge,Double> midEdgeMesh,Halfedge p){
+        /*to minimize computation time, if we see that opposite halfedge is in the hash table we use its value*/
+        if(!midEdgeMesh.containsKey(p))
+            midEdgeMesh.put(p,midEdgeMesh.get(p.opposite));
+        if(!midEdgeMesh.containsKey(p.prev)){
+            double val;
+            if(midEdgeMesh.containsKey(p.prev.opposite)){
+                val=midEdgeMesh.get(p.prev.opposite);
+            }
+            else
+                val=midEdgeMesh.get(p)-this.conjugatePrevDiff(p);
+            midEdgeMesh.put(p.prev,val);
 
+        }
+        if(!midEdgeMesh.containsKey(p.next)) {
+            double val;
+            if(midEdgeMesh.containsKey(p.next.opposite)){
+                val=midEdgeMesh.get(p.next.opposite);
+            }
+            else
+                val=this.conjugatePrevDiff(p.next) + midEdgeMesh.get(p);
+            midEdgeMesh.put(p.next,val );
+        }
+    }
     /*methods for computing the conjugate*/
     private double conjugatePrevDiff(Halfedge p){
         /* staying inside the face of the halfedge
@@ -218,26 +245,35 @@ public class MobiusParametrization {
         val=val/2;
         return val;
     }
-    private void updateSurround(Hashtable<Halfedge,Double> midEdgeMesh,Halfedge p){
-        if(!midEdgeMesh.containsKey(p.opposite)){
-            midEdgeMesh.put(p.opposite,midEdgeMesh.get(p));
-            this.updateSurround(midEdgeMesh,p.opposite);
-        }
-        if(!midEdgeMesh.containsKey(p.prev)){
-            midEdgeMesh.put(p.prev,midEdgeMesh.get(p)-this.conjugatePrevDiff(p));
-            this.updateSurround(midEdgeMesh,p.prev);
-        }
-        if(!midEdgeMesh.containsKey(p.next)) {
-            midEdgeMesh.put(p.next, this.conjugatePrevDiff(p.next) + midEdgeMesh.get(p));
-            this.updateSurround(midEdgeMesh, p.next);
-        }
-    }
+
+
     private Hashtable<Halfedge, Double> computeConjugate() {
-        /*Instead of seeing a mid-edge mesh as a mesh, we can see it as an hastable between halfedge and their value*/
+        /*Instead of seeing a mid-edge mesh as a mesh, we can see it as an hastable between halfedge and their value
+        * We need to browse the whole mesh starting from a halfedge.
+        * To do so: Everytime we are on a new face we compute the value for all halfedge and opposite halfedge.
+        *
+        * Then we go to the prev.opposite,
+        * if its value is already define we go to next.opposite.
+        * If it is still the case we conclude that we have finished the browsing.
+        *
+        **/
+        ArrayList<Halfedge> sources=new ArrayList<>();
         Hashtable<Halfedge,Double> midEdgeMesh= new Hashtable<>();
-        Halfedge e0=m1.polyhedron3D.vertices.get(0).getHalfedge();
+        Halfedge e0=this.m1.polyhedron3D.vertices.get(0).getHalfedge();
         midEdgeMesh.put(e0,0.);
-        this.updateSurround(midEdgeMesh,e0);
+        sources.add(e0);
+        while(!sources.isEmpty()){
+            Halfedge e=sources.remove(0);
+            updateSurround(midEdgeMesh,e);
+            if(!midEdgeMesh.containsKey(e.next.opposite)) {
+                midEdgeMesh.put(e.next.opposite, midEdgeMesh.get(e.next));
+                sources.add(e.next.opposite);
+            }
+            if(!midEdgeMesh.containsKey(e.prev.opposite)) {
+                midEdgeMesh.put(e.prev.opposite, midEdgeMesh.get(e.prev));
+                sources.add(e.prev.opposite);
+            }
+        }
         return midEdgeMesh;
     }
 
@@ -260,6 +296,7 @@ public class MobiusParametrization {
 
         }
         Hashtable<Halfedge,Double> midEdge=this.computeConjugate();
+        System.out.println("Mid Edge Mesh computed, of size: "+midEdge.size());
         Hashtable<Halfedge,double[]> result=new Hashtable<>();
         for(Halfedge e:m1.polyhedron3D.halfedges){
             double[] val={(U[e.vertex.index]+U[e.opposite.vertex.index])/2,midEdge.get(e)};
@@ -272,7 +309,7 @@ public class MobiusParametrization {
         Hashtable<Halfedge,double[]> planarEmbed=this.planarEmbeding();
         double[][] projection=new double[sample.length][2];
         for(int i=0;i<sample.length;i++){
-            projection[i]=planarEmbed.get(sample[i]);
+            projection[i]=planarEmbed.get(sample[i].getHalfedge());
         }
         return projection;
     }

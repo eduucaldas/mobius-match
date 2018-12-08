@@ -24,7 +24,10 @@ public class CorrespondenceProcessor {
         ArrayList<Vertex> sources=new ArrayList<>();
         sources.add(p);
         Hashtable<Vertex,Double> distTable=new Hashtable<>();
-        distTable.put(p,0.);
+        for(Vertex v:m1.polyhedron3D.vertices){
+            distTable.put(v,-1.);
+        }
+        distTable.replace(p,0.);
         Sampler.executefps(sources,distTable,m1);
         return distTable;
     }
@@ -89,8 +92,8 @@ public class CorrespondenceProcessor {
         return coord;
    }
     public ArrayList<Vertex[]> computeFuzzyCorrespondenceMatrix(double[][] correspondenceMatrix) {
-        /* This function first compute the correspondence matrix using previous algorithm
-         * Then it computes the FUZZY correspondence matrix, with a minimum threshold of confidence
+        /*
+         * Computes the FUZZY correspondence matrix, with a minimum threshold of confidence
          * We sort the confidence scores.
          * It then look at low scores, in confidence order and:
          * For each pair (zj,wj):
@@ -115,8 +118,8 @@ public class CorrespondenceProcessor {
         for(double max:fuzzyCorrespondence.keySet()){
             int[] coords=fuzzyCorrespondence.get(max);
             Vertex[] v=new Vertex[2];
-            v[0]=this.m1.polyhedron3D.vertices.get(coords[0]);
-            v[1]=this.m2.polyhedron3D.vertices.get(coords[1]);
+            v[0]=this.m1.sampled[coords[0]];
+            v[1]=this.m2.sampled[coords[1]];
             interestingPoints[boucle][0]=v[0];
             interestingPoints[boucle][1]=v[1];
             if(max>this.threshold){
