@@ -79,11 +79,6 @@ public class MeshViewer extends PApplet {
                 //We execute our algorythm if the e or E button is pressed.
                 this.vm.executeAlgorithm();
                 break;
-            case ('d'):
-            case ('D'):
-                //execute beginnin of algorithm in order to visualize the parametrized plane.
-                this.vm.executeDebug();
-                break;
             case('m'):
             case('M'):
                 this.drawnMesh=1-this.drawnMesh;

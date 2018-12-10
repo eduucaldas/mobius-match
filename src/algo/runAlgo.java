@@ -5,6 +5,7 @@ import Jcg.mesh.MeshBuilder;
 import Jcg.mesh.MeshLoader;
 import Jcg.mesh.SharedVertexRepresentation;
 import Jcg.polyhedron.Face;
+import Jcg.polyhedron.Halfedge;
 import Jcg.polyhedron.Vertex;
 import meshmanager.SurfaceMesh;
 import parametrization.MobiusParametrization;
@@ -14,6 +15,7 @@ import viewer.MeshViewer;
 import viewer.ParametrizationViewer;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 public class runAlgo {
     MeshViewer mV;
@@ -60,6 +62,11 @@ public class runAlgo {
         m2.cutFace=cut2;
         m2.displayCutFace=true;
 
+    }
+    private Hashtable<Halfedge,double[]> findPlanarEmbedingForDebug(SurfaceMesh m1){
+        MobiusParametrization mp1=new MobiusParametrization(m1,m1.cutFace,0.001);
+        System.out.println("finding projection sampled");
+        return mp1.planarEmbeding();
     }
     private void parametrizeDebug(){
         MobiusParametrization mp1=new MobiusParametrization(m1,m1.cutFace,0.001);
@@ -118,24 +125,30 @@ public class runAlgo {
         this.mobiusVote();
         this.establishCorrespondenceProcessor();
     }
-    public void executeDebug(){
+    public void initializeDebug(){
         this.sample();
         this.findCutFace();
-        this.parametrizeDebug();
+    }
+    public Hashtable<Halfedge,double[]> executeDebug(SurfaceMesh m0){
+        Hashtable<Halfedge,double[]> planarEmbed1=this.findPlanarEmbedingForDebug(m0);
+        return planarEmbed1;
+        /*
         SurfaceMesh p1=m1;
         SurfaceMesh p2=m2;
-        //Projecting the surfadce mesh in the complexe plane, then saving its parametrization to run a new applet on it
+        //Projecting the surfadce mesh in the complexe plane, then saving its parametrization to run a new applet on it*/
+        /*
         for(int i=0;i<c1.length;i++){
-            p1.polyhedron3D.halfedges.get(i).getVertex().setPoint(new Point_3(c1[i][0],c1[i][1],0));
+            m1.polyhedron3D.halfedges.get(i).getVertex().setPoint(new Point_3(c1[i][0],c1[i][1],0));
         }
         for(int i=0;i<c2.length;i++){
-            p2.polyhedron3D.halfedges.get(i).getVertex().setPoint(new Point_3(c1[i][0],c1[i][1],0));
+            m2.polyhedron3D.halfedges.get(i).getVertex().setPoint(new Point_3(c1[i][0],c1[i][1],0));
         }
+        /*
         SharedVertexRepresentation svr1=new SharedVertexRepresentation(p1.polyhedron3D);
         SharedVertexRepresentation svr2=new SharedVertexRepresentation(p2.polyhedron3D);
         SVRUtils.svr2off(svr1,"OFF/parametrize1.off");
         SVRUtils.svr2off(svr2,"OFF/parametrize2.off");
 
-        ParametrizationViewer.main();
+        ParametrizationViewer.main();*/
     }
 }

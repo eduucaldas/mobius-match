@@ -33,9 +33,11 @@ public class MobiusParametrization {
     double precision;
     double[] U;
     boolean[] isInitialPoints;
+    int indexOFFirstInitialPoint;
 
     public MobiusParametrization(SurfaceMesh m1,Face cutFace,double precision){
         this.m1=m1;
+        int indexOFFirstInitialPoint=-1;
         this.precision=precision;
         int n=m1.polyhedron3D.vertices.size();
         int nIn = n-3; // matrix size
@@ -49,6 +51,9 @@ public class MobiusParametrization {
         for(int i=0;i<3;i++){
             if(i==0) {
                 this.isInitialPoints[faceEdge.vertex.index]=true;
+            }
+            else if(indexOFFirstInitialPoint==-1){
+                indexOFFirstInitialPoint=faceEdge.vertex.index;
             }
             isInner[faceEdge.vertex.index]=false;
             faceEdge=faceEdge.next;
@@ -125,12 +130,15 @@ public class MobiusParametrization {
         //creates righ hand term
         double[] B=new double[nIn];
         for (Vertex v : m1.polyhedron3D.vertices) {
-            if (isInner[v.index] && !isInitialPoints[v.index]) {
+            if (!isInner[v.index] && !isInitialPoints[v.index]) {
                 Halfedge e=v.getHalfedge().opposite;
                 Halfedge f=e;
                 do{
                     double facingAngle=MobiusParametrization.computesFacingAngle(f);
-                    B[vertexOrder[f.vertex.index]]+=facingAngle/Sum[vertexOrder[f.opposite.vertex.index]];
+                    if(v.index==indexOFFirstInitialPoint)
+                        B[vertexOrder[f.vertex.index]]+=facingAngle/Sum[vertexOrder[f.opposite.vertex.index]];
+                    else
+                        B[vertexOrder[f.vertex.index]]-=facingAngle/Sum[vertexOrder[f.opposite.vertex.index]];
                 }while(f!=e);
             }
         }
@@ -276,7 +284,7 @@ public class MobiusParametrization {
         return midEdgeMesh;
     }
 
-    private Hashtable<Halfedge,double[]> planarEmbeding(){
+    public Hashtable<Halfedge,double[]> planarEmbeding(){
         double[] solvedU=this.solveForU();
         /* This creates the final U
         *
@@ -289,8 +297,10 @@ public class MobiusParametrization {
             else{
                 if(this.isInitialPoints[v.index])
                     U[v.index] =0;
-                else
+                else if(v.index==indexOFFirstInitialPoint)
                     U[v.index] =1;
+                else
+                    U[v.index] = -1;
             }
 
         }
