@@ -11,15 +11,13 @@ import test.SamplerTest;
 import utils.MidEdgeFromSurface;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Set;
 
 /**
- * A simple 3d viewer for visualizing surface meshes (based on Processing)
+ * A viewer to debug the parametrization!e
  *
- * @author Luca Castelli Aleardi (INF574, 2018)
- *
- * We modified this MeshViewer class to fit to our projects need.
  */
 public class ParametrizationViewer extends MeshViewer {
     ArrayList<Halfedge> midEdgeList;
@@ -55,8 +53,8 @@ public class ParametrizationViewer extends MeshViewer {
     }
     private void drawPlanarEmbedding(Hashtable<Halfedge,double[]> h0){
         for (Halfedge<Point_3> e : h0.keySet()){
-            Point_3 p = e.vertex.getPoint();
-            Point_3 q = e.opposite.vertex.getPoint();
+            Point_3 p = new Point_3(h0.get(e)[0],h0.get(e)[1],0);
+            Point_3 q = new Point_3(h0.get(e.next)[0],h0.get(e.next)[1],0);
             this.drawSegment(p, q); // draw edge (p,q)
         }
     }
@@ -100,16 +98,16 @@ public class ParametrizationViewer extends MeshViewer {
                 this.scaleFactor=m2.computeScaleFactor();
         }
         else{
-            Set<Halfedge> S;
+            Collection<double[]> S;
             if(this.drawnMesh==1){
-                S=h1.keySet();
+                S=h1.values();
             }
             else
-                S=h2.keySet();
+                S=h2.values();
             double maxDistance = 0.;
             Point_3 origin = new Point_3(0., 0., 0.);
-            for (Halfedge h : h1.keySet()) {
-                Vertex v=h.getVertex();
+            for (double[] d:S) {
+                Vertex v=new Vertex(new Point_3(d[0],d[1],0));
                 double distance = Math.sqrt(v.getPoint().squareDistance(origin).doubleValue());
                 maxDistance = Math.max(maxDistance, distance);
             }
