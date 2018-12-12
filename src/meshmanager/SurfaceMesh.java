@@ -175,9 +175,9 @@ public class SurfaceMesh {
         for(int i=0;i<correspondence.length;i++) {
             Vertex v=correspondence[i];
             if(i%2==0)
-                view.stroke(i*255/(correspondence.length-1),i*255/(correspondence.length-1),0);
+                view.stroke((i+1)*255/(correspondence.length),(i+1)*255/(correspondence.length),0);
             else
-                view.stroke(0,i*255/(correspondence.length-1),i*255/(correspondence.length-1));
+                view.stroke(0,(i+1)*255/(correspondence.length),(i+1)*255/(correspondence.length));
             this.drawVertex((Point_3) v.getPoint(), 4);
         }
     }

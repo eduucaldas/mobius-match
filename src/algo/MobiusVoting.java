@@ -48,7 +48,7 @@ public class MobiusVoting {
         double e=b[0]*b[0]-b[1]*b[1];
         if(e==0){
             //this will be the case for the last sampled point.... something need to be done to cope with this issue
-            throw new Error("division by 0 incountered");
+            return new double[]{1000000,1000000};
         }
         double[] d={c[0]/e,c[1]/e};
         return d;
