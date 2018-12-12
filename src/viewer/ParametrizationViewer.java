@@ -21,14 +21,14 @@ import java.util.Set;
  */
 public class ParametrizationViewer extends MeshViewer {
     ArrayList<Halfedge> midEdgeList;
-    String filename1="OFF/cow.off";
-    String filename2="OFF/cow.off";
+    String filename1="OFF/star.off";
+    String filename2="OFF/bague.off";
     Hashtable<Halfedge,double[]> h1;
     Hashtable<Halfedge,double[]> h2;
     int drawnMesh;
     boolean drawSurface;
     double scaleFactor;
-    int zoom=1;
+    double zoom=1;
 
     public void setup() {
         size(800, 600, P3D);
@@ -39,6 +39,13 @@ public class ParametrizationViewer extends MeshViewer {
         runner.initializeDebug();
         h1=runner.executeDebug(m1);
         h2=runner.executeDebug(m2);
+        System.out.println("Found values in the complex plane");
+        double count=0;
+        for(Halfedge h:h1.keySet()){
+            if(h1.get(h)[0]!=0) count++;
+            System.out.println("Halfedge: "+h.index+" has value "+h1.get(h)[0]+" , "+h1.get(h)[1]);
+        }
+        System.out.println(" We counted "+count+" points with real position not being 0");
         drawSurface=true;
         drawnMesh=0;
         this.updateScaleFactor();
@@ -127,11 +134,11 @@ public class ParametrizationViewer extends MeshViewer {
                 break;
             case('i'):
             case('I'):
-                this.zoom+=1;
+                this.zoom=zoom*2;
                 break;
             case('o'):
             case('O'):
-                this.zoom-=1;
+                this.zoom=zoom/2;
                 break;
             default:
                 break;

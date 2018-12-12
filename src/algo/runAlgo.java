@@ -55,16 +55,17 @@ public class runAlgo {
         Face cut1=PolyGraph.findCutFace(m1.polyhedron3D);
         m1.cutFace=cut1;
         m1.displayCutFace=true;
-        System.out.println("found cut face");
+        System.out.println("found cut face 1" +cut1.getEdge().vertex.index);
 
         System.out.println("finding cut face for 2");
         Face cut2=PolyGraph.findCutFace(m2.polyhedron3D);
         m2.cutFace=cut2;
         m2.displayCutFace=true;
+        System.out.println("found cut face 2" +cut2.getEdge().vertex.index);
 
     }
     private Hashtable<Halfedge,double[]> findPlanarEmbedingForDebug(SurfaceMesh m1){
-        MobiusParametrization mp1=new MobiusParametrization(m1,m1.cutFace,0.001);
+        MobiusParametrization mp1=new MobiusParametrization(m1,m1.cutFace,0.0001);
         System.out.println("finding projection sampled");
         return mp1.planarEmbeding();
     }
@@ -116,7 +117,9 @@ public class runAlgo {
     }
     public void initializeDebug(){
         this.sample();
-        this.findCutFace();
+        m1.cutFace=m1.polyhedron3D.vertices.get(11).getHalfedge().face;
+        //this.findCutFace();
+        m2.cutFace=m2.polyhedron3D.vertices.get(21).getHalfedge().face;
     }
     public Hashtable<Halfedge,double[]> executeDebug(SurfaceMesh m0){
         Hashtable<Halfedge,double[]> planarEmbed1=this.findPlanarEmbedingForDebug(m0);

@@ -36,14 +36,13 @@ public class MobiusParametrization {
     double precision;
     double[] U;
     boolean[] isInitialPoints;
-    int indexOFFirstInitialPoint;
+    Face cutFace;
 
     public MobiusParametrization(SurfaceMesh m1,Face cutFace,double precision){
         this.m1=m1;
-        int indexOFFirstInitialPoint=-1;
         this.precision=precision;
         int n=m1.polyhedron3D.vertices.size();
-        int nIn = n-3; // matrix size
+        int nIn = n-2; // matrix size
         Halfedge faceEdge=cutFace.getEdge();
         this.isInner=new boolean[n];
         this.isInitialPoints=new boolean[n];
@@ -51,15 +50,13 @@ public class MobiusParametrization {
             this.isInitialPoints[i]=false;
             this.isInner[i]=true;
         }
-        for(int i=0;i<3;i++){
+        for(int i=0;i<2;i++){
             if(i==0) {
                 this.isInitialPoints[faceEdge.vertex.index]=true;
             }
-            else if(indexOFFirstInitialPoint==-1){
-                indexOFFirstInitialPoint=faceEdge.vertex.index;
-            }
             isInner[faceEdge.vertex.index]=false;
             faceEdge=faceEdge.next;
+            System.out.print("The "+i+"th fixed point has a total of "+m1.polyhedron3D.vertexDegree(faceEdge.vertex));
         }
         int[] vertexOrder = new int[n];
         int counter = 0; // counter for inner vertices
@@ -68,9 +65,13 @@ public class MobiusParametrization {
                 vertexOrder[i] = counter; // store the permutation between vertex indices: from G to G1 (the sub-graph consisting of inner vertices)
                 counter++;
             }
+            else{
+                vertexOrder[i] = -1;
+            }
         }
         this.vertexOrder=vertexOrder;
         this.nIn=nIn;
+        this.cutFace=cutFace;
     }
 
     public static double computesFacingAngle(Halfedge f){
@@ -117,31 +118,37 @@ public class MobiusParametrization {
 
     private DoubleMatrix2D createUMatrix() {
         DoubleMatrix2D U; // (sparse) matrix implementation based on Parallel Colt library
-        System.out.print("Creating Laplacian matrix from a graph of size " + nIn+3 + " (using Parallel Colt library)...");
+        System.out.print("Creating Laplacian matrix from a graph of size " + nIn+2 + " (using Parallel Colt library)...");
         long startTime = System.nanoTime(), endTime; // for evaluating time performances
 
         U = new SparseDoubleMatrix2D(nIn, nIn); // create a sparse matrix of size nInxnIn
         this.Sum=new double[nIn];
         for (Vertex v : m1.polyhedron3D.vertices) {
             if(isInner[v.index]){
-                U.set(vertexOrder[v.index],vertexOrder[v.index],1.);
+                //U.set(vertexOrder[v.index],vertexOrder[v.index],1.);
                 //First browse of indexes => computes edge bases angles for each neighbor vertex, and compute their sum
                 Halfedge e=v.getHalfedge().opposite;
                 Halfedge f=e;
                 double sum=0;
+                double count=0;
                 do{
                     double facingAngle=MobiusParametrization.computesBaseAngle(f);
-                    U.set(vertexOrder[f.opposite.vertex.index],vertexOrder[f.vertex.index],facingAngle);
+                    if(isInner[f.vertex.index])
+                        U.set(vertexOrder[f.opposite.vertex.index],vertexOrder[f.vertex.index],(-1)*facingAngle);
                     sum=sum+facingAngle;
                     f=f.opposite.next;
+                    count++;
                 }while(f!=e);
                 //second browse: divide by sum!
                 Sum[vertexOrder[f.opposite.vertex.index]]=sum;
-                do{
-                    double val=U.get(vertexOrder[f.opposite.vertex.index],vertexOrder[f.vertex.index]);
-                    U.set(vertexOrder[f.opposite.vertex.index],vertexOrder[f.vertex.index],(-1)*val/sum);
+                /*do{
+                    if(isInner[f.vertex.index]) {
+                        double val = U.get(vertexOrder[f.opposite.vertex.index], vertexOrder[f.vertex.index]);
+                        U.set(vertexOrder[f.opposite.vertex.index], vertexOrder[f.vertex.index], val / sum);
+                    }
                     f=f.opposite.next;
-                }while(f!=e);
+                }while(f!=e);*/
+                U.set(vertexOrder[v.index],vertexOrder[v.index],sum);
             }
         }
         endTime = System.nanoTime();
@@ -153,15 +160,18 @@ public class MobiusParametrization {
         //creates righ hand term
         double[] B=new double[nIn];
         for (Vertex v : m1.polyhedron3D.vertices) {
-            if (!isInner[v.index] && !isInitialPoints[v.index]) {
+            if (!isInner[v.index]) {
                 Halfedge e=v.getHalfedge().opposite;
                 Halfedge f=e;
                 do{
-                    double facingAngle=MobiusParametrization.computesBaseAngle(f);
-                    if(v.index==indexOFFirstInitialPoint)
-                        B[vertexOrder[f.vertex.index]]+=facingAngle/Sum[vertexOrder[f.opposite.vertex.index]];
-                    else
-                        B[vertexOrder[f.vertex.index]]-=facingAngle/Sum[vertexOrder[f.opposite.vertex.index]];
+                    if(isInner[f.vertex.index]) {
+                        double facingAngle = MobiusParametrization.computesBaseAngle(f.opposite);
+                        if (isInitialPoints[v.index])
+                            B[vertexOrder[f.vertex.index]] += facingAngle;// / Sum[vertexOrder[f.vertex.index]];
+                        else
+                            B[vertexOrder[f.vertex.index]] -= facingAngle;// / Sum[vertexOrder[f.vertex.index]];
+                    }
+                    f=f.opposite.next;
                 }while(f!=e);
             }
         }
@@ -170,10 +180,16 @@ public class MobiusParametrization {
     private double[] solveForU() {
         /* SOLVE for U using the PColt implementation to have sparse matrix
         * */
-        DoubleMatrix2D U=this.createUMatrix();
-        System.out.println(U.toString());
+        DoubleMatrix2D myMatrix=this.createUMatrix();
+        //System.out.println(U.toString());
         double[] b=this.createsRightHandTerm();
-        double[] result=this.solve(U,b,precision);
+        int count=0;
+        for(double d:b){
+            if(d!=0){ count++;
+            System.out.println(d);}
+        }
+        System.out.println("il y a "+count+" termes non nuls.");
+        double[] result=this.solve(myMatrix,b,precision);
         return result;
     }
     private double[] solve(DoubleMatrix2D A, double[] b, double precision) {
@@ -210,6 +226,7 @@ public class MobiusParametrization {
         } catch (IterativeSolverDoubleNotConvergedException e) {
             e.printStackTrace();
         }
+        System.out.print("Found solution: ");
         for (int i = 0; i < size; i++) {
             x[i] = X.get(i);
         }
@@ -223,17 +240,16 @@ public class MobiusParametrization {
 
         return x;
     }
+
+    /*methods for computing the conjugate*/
     private void updateSurround(Hashtable<Halfedge,Double> midEdgeMesh,Halfedge p){
-        /*to minimize computation time, if we see that opposite halfedge is in the hash table we use its value*/
-        if(!midEdgeMesh.containsKey(p))
-            midEdgeMesh.put(p,midEdgeMesh.get(p.opposite));
         if(!midEdgeMesh.containsKey(p.prev)){
             double val;
             if(midEdgeMesh.containsKey(p.prev.opposite)){
                 val=midEdgeMesh.get(p.prev.opposite);
             }
             else
-                val=midEdgeMesh.get(p)-this.conjugatePrevDiff(p);
+                val=midEdgeMesh.get(p)-this.conjugatePrevDiff(p.prev);
             midEdgeMesh.put(p.prev,val);
 
         }
@@ -243,39 +259,37 @@ public class MobiusParametrization {
                 val=midEdgeMesh.get(p.next.opposite);
             }
             else
-                val=this.conjugatePrevDiff(p.next) + midEdgeMesh.get(p);
+                val=this.conjugatePrevDiff(p) + midEdgeMesh.get(p);
             midEdgeMesh.put(p.next,val );
         }
     }
-    /*methods for computing the conjugate*/
     private double conjugatePrevDiff(Halfedge p){
         /* staying inside the face of the halfedge
-         it computes the value of up*-ub*, the prev halfedge
+         it computes the value of ur*-us* as in the paper figure.
         * */
         Vertex uj=p.vertex;
-        Vertex ui=p.prev.vertex;
-        Vertex uk=p.next.vertex;
+        Vertex uk=p.prev.vertex;
+        Vertex ui=p.next.vertex;
         Point_3 vj=(Point_3) uj.getPoint();
-        Point_3 vk=(Point_3) ui.getPoint();
-        Point_3 vi=(Point_3) uk.getPoint();
+        Point_3 vk=(Point_3) uk.getPoint();
+        Point_3 vi=(Point_3) ui.getPoint();
         //computes thetai
-        Vector_3 v1=new Vector_3(vi,vj);
-        Vector_3 v2=new Vector_3(vi,vk);
+        Vector_3 v1=new Vector_3(vi,vk);
+        Vector_3 v2=new Vector_3(vi,vj);
         double pdt = (double) v1.innerProduct(v2);
         double crosspdt =Math.sqrt((double)v1.crossProduct(v2).squaredLength());
         double cotthetai = pdt / crosspdt;
-        //computes thetaj
-        v1=new Vector_3(vj,vi);
-        v2=new Vector_3(vj,vk);
+        //computes thetak
+        v1=new Vector_3(vk,vi);
+        v2=new Vector_3(vk,vj);
         pdt = (double) v1.innerProduct(v2);
         crosspdt =Math.sqrt((double)v1.crossProduct(v2).squaredLength());
-        double cotthetaj = pdt / crosspdt;
-        double val=(U[uk.index]-U[ui.index])*cotthetaj;
+        double cotthetak = pdt / crosspdt;
+        double val=(U[ui.index]-U[uj.index])*cotthetak;
         val+=(U[uk.index]-U[uj.index])*cotthetai;
         val=val/2;
         return val;
     }
-
 
     private Hashtable<Halfedge, Double> computeConjugate() {
         /*Instead of seeing a mid-edge mesh as a mesh, we can see it as an hastable between halfedge and their value
@@ -291,11 +305,24 @@ public class MobiusParametrization {
             updateSurround(midEdgeMesh,e);
             if(!midEdgeMesh.containsKey(e.next.opposite)) {
                 midEdgeMesh.put(e.next.opposite, midEdgeMesh.get(e.next));
-                sources.add(e.next.opposite);
+                if(e.next.opposite.face!=cutFace)
+                    sources.add(e.next.opposite);
+                else
+                    System.out.println("encountered face");
             }
             if(!midEdgeMesh.containsKey(e.prev.opposite)) {
                 midEdgeMesh.put(e.prev.opposite, midEdgeMesh.get(e.prev));
-                sources.add(e.prev.opposite);
+                if(e.prev.opposite.face!=cutFace)
+                    sources.add(e.prev.opposite);
+                else
+                    System.out.println("encountered face");
+            }
+            if(!midEdgeMesh.containsKey(e.opposite)){
+                midEdgeMesh.put(e.opposite,midEdgeMesh.get(e));
+                if(e.opposite.face!=cutFace)
+                    sources.add(e.opposite);
+                else
+                    System.out.println("encountered face");
             }
         }
         return midEdgeMesh;
@@ -306,18 +333,17 @@ public class MobiusParametrization {
         /* This creates the final U
         *
         * */
-        this.U=new double[this.nIn+3];
+        this.U=new double[this.nIn+2];
         for(Vertex v:m1.polyhedron3D.vertices){
             if(this.isInner[v.index]) {
                 U[v.index] = solvedU[this.vertexOrder[v.index]];
             }
             else{
                 if(this.isInitialPoints[v.index])
-                    U[v.index] =0;
-                else if(v.index==indexOFFirstInitialPoint)
                     U[v.index] =1;
                 else
-                    U[v.index] = -1;
+                    U[v.index] =-1;
+
             }
 
         }
@@ -350,7 +376,7 @@ public class MobiusParametrization {
                 distMin=dist;
                 selectedEdge=f;
             }
-            f=f.opposite.next.opposite;
+            f=f.opposite.next;
         }while(f!=e.opposite);
         return selectedEdge;
     }
@@ -368,9 +394,27 @@ public class MobiusParametrization {
         String filename="OFF/cow.off";
         SurfaceMesh mesh=new SurfaceMesh(new MeshViewer(),filename);
         for(Halfedge h:mesh.polyhedron3D.halfedges){
-            System.out.println(" edge");
-            System.out.println(MobiusParametrization.computesBaseAngle(h));
-            System.out.println(MobiusParametrization.computesFacingAngle(h));
+            if(h.next.face!=h.face)
+                System.out.println(h.next.face==h.face);
         }
+        /*Vertex v0=new Vertex(new Point_3(0,0,0));
+        Vertex v1=new Vertex(new Point_3(0,4,0));
+        Vertex v2=new Vertex(new Point_3(4,4,0));
+        Vertex v3=new Vertex(new Point_3(-4,4,0));
+        Halfedge e0=new Halfedge();
+        Halfedge next=new Halfedge();
+        Halfedge opposite=new Halfedge();
+        Halfedge oppositePrev=new Halfedge();
+        Halfedge oppositeOppositePrev=new Halfedge();
+        e0.next=next;
+        e0.opposite=opposite;
+        opposite.prev=oppositePrev;
+        oppositePrev.opposite=oppositeOppositePrev;
+        e0.setVertex(v0);
+        next.setVertex(v3);
+        opposite.setVertex(v1);
+        oppositePrev.setVertex(v0);
+        oppositeOppositePrev.setVertex(v2);
+        System.out.print(MobiusParametrization.computesBaseAngle(e0));*/
     }
 }
