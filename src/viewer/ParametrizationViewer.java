@@ -21,8 +21,8 @@ import java.util.Set;
  */
 public class ParametrizationViewer extends MeshViewer {
     ArrayList<Halfedge> midEdgeList;
-    String filename1="OFF/star.off";
-    String filename2="OFF/bague.off";
+    String filename1="OFF/cow.off";
+    String filename2="OFF/tri_triceratops.off";
     Hashtable<Halfedge,double[]> h1;
     Hashtable<Halfedge,double[]> h2;
     int drawnMesh;
@@ -39,13 +39,11 @@ public class ParametrizationViewer extends MeshViewer {
         runner.initializeDebug();
         h1=runner.executeDebug(m1);
         h2=runner.executeDebug(m2);
-        System.out.println("Found values in the complex plane");
         double count=0;
         for(Halfedge h:h1.keySet()){
             if(h1.get(h)[0]!=0) count++;
-            System.out.println("Halfedge: "+h.index+" has value "+h1.get(h)[0]+" , "+h1.get(h)[1]);
+            System.out.println(h1.get(h)[0]+" , "+h1.get(h)[1]);
         }
-        System.out.println(" We counted "+count+" points with real position not being 0");
         drawSurface=true;
         drawnMesh=0;
         this.updateScaleFactor();
@@ -57,6 +55,22 @@ public class ParametrizationViewer extends MeshViewer {
             Point_3 q = e.opposite.vertex.getPoint();
             this.drawSegment(p, q); // draw edge (p,q)
         }
+        if(this.drawnMesh==0){
+            Point_3 p=m1.polyhedron3D.vertices.get(10).getPoint();
+            Point_3 p2=m1.polyhedron3D.vertices.get(0).getPoint();
+            this.strokeWeight(10);
+            this.stroke(255,0,0);
+            this.drawSegment(p2,p2);
+            this.drawSegment(p,p);
+        }
+        else{
+            Point_3 p=m2.polyhedron3D.vertices.get(10).getPoint();
+            Point_3 p2=m2.polyhedron3D.vertices.get(0).getPoint();
+            this.strokeWeight(10);
+            this.stroke(255,0,0);
+            this.drawSegment(p,p);
+            this.drawSegment(p2,p2);
+        }
     }
     private void drawPlanarEmbedding(Hashtable<Halfedge,double[]> h0){
         for (Halfedge<Point_3> e : h0.keySet()){
@@ -64,8 +78,27 @@ public class ParametrizationViewer extends MeshViewer {
             Point_3 q = new Point_3(h0.get(e.next)[0],h0.get(e.next)[1],0);
             this.drawSegment(p, q); // draw edge (p,q)
         }
-    }
+        Face f;
+        Point_3 pIniConj;
+        if(this.drawnMesh==0){
+            f=m1.cutFace;
+            double[] r=h0.get(m1.polyhedron3D.vertices.get(10).getHalfedge());
+            pIniConj=new Point_3(r[0],r[1],0);
+        }
+        else{
+            f=m2.cutFace;
+            double[] r=h0.get(m2.polyhedron3D.vertices.get(10).getHalfedge());
+            pIniConj=new Point_3(r[0],r[1],0);
+        }
+        Halfedge h=f.getEdge();
+        this.stroke(255,0,0);
+        this.strokeWeight(10);
+        Point_3 p=new Point_3(h0.get(h)[0],h0.get(h)[1],0);
+        Point_3 q=new Point_3(h0.get(h.next)[0],h0.get(h.next)[1],0);
+        this.drawSegment(p,q);
+        this.drawSegment(pIniConj,pIniConj);
 
+    }
     public void draw() {
         background(255);
         translate(width / 2.f, height / 2.f, -1 * height / 2.f);

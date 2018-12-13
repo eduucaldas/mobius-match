@@ -29,7 +29,7 @@ public class MeshViewer extends PApplet {
     public runAlgo vm;
     int drawnMesh=0;
 
-    String filename1="OFF/tri_triceratops.off";
+    String filename1="OFF/cow.off";
     String filename2="OFF/tri_triceratops.off";
     //String filename2="OFF/cow.off";
     public void setup() {
