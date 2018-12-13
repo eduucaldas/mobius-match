@@ -115,6 +115,12 @@ public class CorrespondenceProcessor {
          * Gives back vertexes of final list of correspondences.
          */
         this.normalizeByMax(correspondenceMatrix);
+        for(int i=0;i<correspondenceMatrix.length;i++){
+            for(int j=0;j<correspondenceMatrix[i].length;j++){
+                System.out.print(correspondenceMatrix[i][j]+" ");
+            }
+            System.out.println("");
+        }
         //CREATION OF FIRST CORRESPONDENCE MATRIX:
         Hashtable<Double,int[]> fuzzyCorrespondence=new Hashtable<Double, int[]>();
         for(int i=0;i<correspondenceMatrix.length;i++){

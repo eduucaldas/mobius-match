@@ -93,7 +93,7 @@ public class runAlgo {
         System.out.println("Computing fuzzy matrix and giving corresponding vertex");
     }
     private void establishCorrespondenceProcessor(){
-        CorrespondenceProcessor cp=new CorrespondenceProcessor(m1,m2,0.7);
+        CorrespondenceProcessor cp=new CorrespondenceProcessor(m1,m2,0.97);
         ArrayList<Vertex[]> aV=cp.computeFuzzyCorrespondenceMatrix(correspondences);
         Vertex[] v1=new Vertex[aV.size()];
         Vertex[] v2=new Vertex[aV.size()];
