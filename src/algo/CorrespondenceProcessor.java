@@ -28,13 +28,12 @@ public class CorrespondenceProcessor {
             distTable.put(v,-1.);
         }
         distTable.replace(p,0.);
-        Sampler.executefps(sources,distTable,m1);
+        distTable=Sampler.executefps(sources,distTable,m1);
         return distTable;
     }
-    private double[] computeFeatureVector(ArrayList<Vertex> selectedSet,Vertex p,Hashtable<Vertex,Double> dist){
+    private double[] computeFeatureVector(ArrayList<Vertex> selectedSet,Hashtable<Vertex,Double> dist){
         /* Computes feature Vector of p with the selected Set.
          * It is defined as double of length that of selectedSet
-         * it ith element is the geodesic distance to vertex p
          */
         double[] featureVector=new double[selectedSet.size()];
 
@@ -91,6 +90,19 @@ public class CorrespondenceProcessor {
         }
         return coord;
    }
+    private void normalizeByMax(double[][] M){
+        double max=0;
+        for(int i=0;i<M.length;i++){
+            for(int j=0;j<M[i].length;j++){
+                max=Math.max(M[i][j],max);
+            }
+        }
+        for(int i=0;i<M.length;i++){
+            for(int j=0;j<M[i].length;j++) {
+                M[i][j]=M[i][j]/max;
+            }
+        }
+    }
     public ArrayList<Vertex[]> computeFuzzyCorrespondenceMatrix(double[][] correspondenceMatrix) {
         /*
          * Computes the FUZZY correspondence matrix, with a minimum threshold of confidence
@@ -102,7 +114,7 @@ public class CorrespondenceProcessor {
          *  then we do the same for wj and if it is also true for wj, then we add (zj,wj) to our list of final correspondence.
          * Gives back vertexes of final list of correspondences.
          */
-
+        this.normalizeByMax(correspondenceMatrix);
         //CREATION OF FIRST CORRESPONDENCE MATRIX:
         Hashtable<Double,int[]> fuzzyCorrespondence=new Hashtable<Double, int[]>();
         for(int i=0;i<correspondenceMatrix.length;i++){
@@ -130,10 +142,12 @@ public class CorrespondenceProcessor {
             }
             boucle++;
         }
+        System.out.println("Found "+realCorrespondence.size()+" pairs with confidence over the threshold");
+        System.out.println("Found "+potentialCorrespondence.size()+" pairs with confidence under the threshold");
         // INCREASE OF THIS CORRESPONDENCE MATRIX PRECISION
         ArrayList<Vertex> set1=new ArrayList<Vertex>();
         ArrayList<Vertex> set2=new ArrayList<Vertex>();
-        for( Vertex[] v2: potentialCorrespondence){
+        for( Vertex[] v2: realCorrespondence){
             set1.add(v2[0]);
             set2.add(v2[1]);
         }
@@ -145,11 +159,11 @@ public class CorrespondenceProcessor {
         for(Vertex[] v:potentialCorrespondence){
             Vertex p=v[0];
             dist=this.geodesicDistances(this.m1,p);
-            a1.put(p,this.computeFeatureVector(set1,p,dist));
+            a1.put(p,this.computeFeatureVector(set1,dist));
 
             p=v[1];
             dist=this.geodesicDistances(this.m2,p);
-            a2.put(p,this.computeFeatureVector(set2,p,dist));
+            a2.put(p,this.computeFeatureVector(set2,dist));
         }
         //computes gamma:
         double maxRadius=0;
@@ -162,16 +176,18 @@ public class CorrespondenceProcessor {
         //finds good correspondence pairs in potential correspondence pairs
         for(Vertex[] v:potentialCorrespondence){
             double min=-1;
-            for(Vertex v1:set1){
-                double distance=this.computeFeatureDist(a1.get(v[0]),a1.get(v1));
+            for(Vertex[] v1:potentialCorrespondence){
+                Vertex bwl=v1[1];
+                double distance=this.computeFeatureDist(a1.get(v[0]),a2.get(bwl));
                 if((min == -1) || (distance < min)){
                     min=distance;
                 }
             }
             if(min<gamma) {
                 min=-1;
-                for (Vertex v2 : set2) {
-                    double distance = this.computeFeatureDist(a1.get(v[0]), a1.get(v2));
+                for (Vertex[] v1 :potentialCorrespondence) {
+                    Vertex azk=v1[0];
+                    double distance = this.computeFeatureDist(a1.get(azk), a2.get(v[1]));
                     if ((min == -1) || (distance < min)) {
                         min = distance;
                     }

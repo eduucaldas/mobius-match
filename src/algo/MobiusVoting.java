@@ -45,7 +45,7 @@ public class MobiusVoting {
     }
     private double[] complexDivision(double[] a,double[] b){
         double[] c=this.complexProd(a,new double[]{b[0],-b[1]});
-        double e=b[0]*b[0]-b[1]*b[1];
+        double e=b[0]*b[0]+b[1]*b[1];
         if(e==0){
             //this will be the case for the last sampled point.... something need to be done to cope with this issue
             return new double[]{1000000,1000000};
@@ -81,16 +81,30 @@ public class MobiusVoting {
         }
         return sampled;
     }
-    private double[][][] createMobiusTransform(int[][] inputPoints) {
+
+    private double[][][] matrixProd(double[][][] mat1,double[][][] mat2){
+        double[][][] result=new double[mat1.length][mat2[0].length][2];
+        for(int i=0;i<mat1.length;i++){
+            for(int j=0;j<mat2[0].length;j++){
+                for(int k=0;k<mat1[0].length;k++){
+                    result[i][j]=this.complexAdd(result[i][j],this.complexProd(mat1[i][k],mat2[k][j]));
+                }
+            }
+        }
+        return result;
+    }
+
+    private double[][][][] createMobiusTransform(int[][] inputPoints) {
         /* creates möbius transforms for each mesh using the sampled points
         *  It returns a double list of 4 elements such as a=double[0][1], b=double[0][1], d=double[0][2], d=double[0][3] for m1
         *  if the computed Möbius matrix is of the form (a*z+b)/(c*z+d)
         * We aligned our initial points on 3 constants points, we could choose e(i*pi*2/3*j), j=1,2,3 as used in the paper
-        * But we can also choose 0,1,infinity
-        * double[] y1={1/2,Math.sqrt(3)/2};
+        * But we can also choose 0,1,infinity*/
+        /*double[] y1={1/2,Math.sqrt(3)/2};
         double[] y2={-1/2,Math.sqrt(3)/2};
-        double[] y3={-1,0};
-        * */
+        double[] y3={-1,0};*/
+        double[][][] localisationMatrix={{{-5.55111512*Math.pow(10,-17),-0.57735027},{-0.5,-0.28867513}},
+                                        {{-1.11022302*Math.pow(10,-16),-0.57735027},{-0.5,-0.28867513}}};
         double[] c1z1=this.c1[inputPoints[0][0]];
         double[] c1z2=this.c1[inputPoints[0][1]];
         double[] c1z3=this.c1[inputPoints[0][2]];
@@ -98,33 +112,58 @@ public class MobiusVoting {
         double[] c2z2=this.c2[inputPoints[1][1]];
         double[] c2z3=this.c2[inputPoints[1][2]];
 
-        double[][][] mobTransform=new double[2][4][2];
+        double[][][] mobTransform=new double[2][2][2];
         mobTransform[0][0]=this.complexDiff(c1z2,c1z3);
         mobTransform[0][1]=this.complexDiff(this.complexProd(c1z1,c1z3),this.complexProd(c1z2,c1z1));
-        mobTransform[0][2]=this.complexDiff(c1z2,c1z1);
-        mobTransform[0][3]=this.complexDiff(this.complexProd(c1z3,c1z1),this.complexProd(c1z3,c1z2));
-        mobTransform[1][0]=this.complexDiff(c2z2,c2z3);
-        mobTransform[1][1]=this.complexDiff(this.complexProd(c2z1,c2z3),this.complexProd(c2z2,c2z1));
-        mobTransform[1][2]=this.complexDiff(c2z2,c2z1);
-        mobTransform[1][3]=this.complexDiff(this.complexProd(c2z3,c2z1),this.complexProd(c2z3,c2z2));
-        return mobTransform;
+        mobTransform[1][0]=this.complexDiff(c1z2,c1z1);
+        mobTransform[1][1]=this.complexDiff(this.complexProd(c1z3,c1z1),this.complexProd(c1z3,c1z2));
+        double[][][] mobTransform1=this.matrixProd(localisationMatrix,mobTransform);
+
+        mobTransform=new double[2][2][2];
+        mobTransform[0][0]=this.complexDiff(c2z2,c2z3);
+        mobTransform[0][1]=this.complexDiff(this.complexProd(c2z1,c2z3),this.complexProd(c2z2,c2z1));
+        mobTransform[0][0]=this.complexDiff(c2z2,c2z1);
+        mobTransform[0][1]=this.complexDiff(this.complexProd(c2z3,c2z1),this.complexProd(c2z3,c2z2));
+        double[][][] mobTransform2=this.matrixProd(localisationMatrix,mobTransform);
+
+        double[][][][] mob=new double[2][2][2][2];
+        mob[0]=mobTransform1;
+        mob[1]=mobTransform2;
+        return mob;
     }
-    private void applyMobius(double[][][] Mobius) {
+    private void applyMobius(double[][][][] Mobius) {
         /* This methods apply Mobius to the c plane with Mobius Matrix
         *
         * */
         this.transformedc1=new double[this.c1.length][2];
         for(int i=0;i<this.c1.length;i++){
-            double[] up=this.complexAdd(this.complexProd(this.c1[i],Mobius[0][0]),Mobius[0][1]);
-            double[] down=this.complexAdd(this.complexProd(this.c1[i],Mobius[0][2]),Mobius[0][3]);
+            double[] up=this.complexAdd(this.complexProd(this.c1[i],Mobius[0][0][0]),Mobius[0][0][1]);
+            double[] down=this.complexAdd(this.complexProd(this.c1[i],Mobius[0][1][0]),Mobius[0][1][1]);
             this.transformedc1[i]=this.complexDivision(up,down);
         }
         this.transformedc2=new double[this.c2.length][2];
         for(int i=0;i<this.c2.length;i++){
-            double[] up=this.complexAdd(this.complexProd(this.c2[i],Mobius[1][0]),Mobius[1][1]);
-            double[] down=this.complexAdd(this.complexProd(this.c2[i],Mobius[1][2]),Mobius[1][3]);
+            double[] up=this.complexAdd(this.complexProd(this.c2[i],Mobius[1][0][0]),Mobius[1][0][1]);
+            double[] down=this.complexAdd(this.complexProd(this.c2[i],Mobius[1][1][0]),Mobius[1][1][1]);
             this.transformedc2[i]=this.complexDivision(up,down);
         }
+        /*
+        System.out.println("Typical value of c1");
+        for(int i=0;i<this.c1.length;i=i+10){
+            for(int j=0;j<2;j++){
+                System.out.print(" "+transformedc1[i][j]);
+            }
+
+        }
+        System.out.println("Typical value of c2");
+        for(int i=0;i<this.c1.length;i=i+10){
+            for(int j=0;j<2;j++){
+                System.out.print(" "+transformedc2[i][j]);
+            }
+        }
+        System.out.println("");
+        System.out.println("");*/
+
     }
     private int[] findNearestNeighbor(int idx,boolean isC1){
         /* a greedy algorithm to find nearest neighbors*/
@@ -216,9 +255,20 @@ public class MobiusVoting {
         this.CorrespondenceMatrix=new double[this.c1.length][this.c2.length];
         for(int i=0;i<I;i++){
             int[][] sampled=this.sampleRandomPoint();
-            double[][][] Mobius=this.createMobiusTransform(sampled);
+            double[][][][] Mobius=this.createMobiusTransform(sampled);
             this.applyMobius(Mobius);
             ArrayList<int[]> mutuallyNearest=this.findMutuallyNearestNeighbors();
+            for(int j=0;j<3;j++){
+                boolean isFound=false;
+                for(int[] arr:mutuallyNearest){
+                    if(arr[0]==sampled[0][j] && arr[1]==sampled[1][j]){
+                        isFound=true;
+                    }
+                }
+                if(!isFound){
+                    throw new Error("did not find sampled");
+                }
+            }
             this.updateCorrespondenceMatrix(mutuallyNearest);
         }
         return CorrespondenceMatrix;

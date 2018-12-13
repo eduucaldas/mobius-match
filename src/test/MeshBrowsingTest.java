@@ -86,9 +86,7 @@ public class MeshBrowsingTest {
         Hashtable<Halfedge,Double> midEdge=getMidEdgeMesh(f);
         System.out.println("Mid edge number of halfedge: "+midEdge.size());
         System.out.println("Initial number of halfedge: "+f.halfedges.size());*/
-        double[][] a={{0.,1.},{1.,2.}};
-        double[] c=a[0];
-        System.out.println(c.length);
+
     }
 
 
