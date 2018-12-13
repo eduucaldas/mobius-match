@@ -159,7 +159,7 @@ public class MobiusParametrization {
         /* SOLVE for U using the PColt implementation to have sparse matrix
         * */
         DoubleMatrix2D myMatrix=this.createUMatrix();
-        System.out.println(myMatrix.toString());
+        //System.out.println(myMatrix.toString());
         double[] b=this.createsRightHandTerm();
         double[] result=this.solve(myMatrix,b,this.precision);
         return result;
@@ -235,7 +235,6 @@ public class MobiusParametrization {
             else
                 val=midEdgeMesh.get(p)-this.conjugatePrevDiff(p.prev);
             midEdgeMesh.put(p.prev,val);
-            System.out.println("updated prev with "+val+" from "+midEdgeMesh.get(p));
 
         }
         if(!midEdgeMesh.containsKey(p.next)) {
@@ -246,7 +245,6 @@ public class MobiusParametrization {
             else
                 val=this.conjugatePrevDiff(p) + midEdgeMesh.get(p);
             midEdgeMesh.put(p.next,val );
-            System.out.println("updated next with "+val+" from "+midEdgeMesh.get(p));
         }
     }
     private double conjugatePrevDiff(Halfedge p){

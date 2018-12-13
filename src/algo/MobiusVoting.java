@@ -116,13 +116,13 @@ public class MobiusVoting {
         this.transformedc1=new double[this.c1.length][2];
         for(int i=0;i<this.c1.length;i++){
             double[] up=this.complexAdd(this.complexProd(this.c1[i],Mobius[0][0]),Mobius[0][1]);
-            double[] down=this.complexAdd(this.complexProd(this.c1[i],Mobius[0][2]),Mobius[0][2]);
+            double[] down=this.complexAdd(this.complexProd(this.c1[i],Mobius[0][2]),Mobius[0][3]);
             this.transformedc1[i]=this.complexDivision(up,down);
         }
         this.transformedc2=new double[this.c2.length][2];
         for(int i=0;i<this.c2.length;i++){
             double[] up=this.complexAdd(this.complexProd(this.c2[i],Mobius[1][0]),Mobius[1][1]);
-            double[] down=this.complexAdd(this.complexProd(this.c2[i],Mobius[1][2]),Mobius[1][2]);
+            double[] down=this.complexAdd(this.complexProd(this.c2[i],Mobius[1][2]),Mobius[1][3]);
             this.transformedc2[i]=this.complexDivision(up,down);
         }
     }

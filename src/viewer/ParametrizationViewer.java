@@ -44,6 +44,11 @@ public class ParametrizationViewer extends MeshViewer {
             if(h1.get(h)[0]!=0) count++;
             System.out.println(h1.get(h)[0]+" , "+h1.get(h)[1]);
         }
+        System.out.println("===========================================================================");
+        for(Halfedge h:h2.keySet()){
+            if(h2.get(h)[0]!=0) count++;
+            System.out.println(h2.get(h)[0]+" , "+h2.get(h)[1]);
+        }
         drawSurface=true;
         drawnMesh=0;
         this.updateScaleFactor();
