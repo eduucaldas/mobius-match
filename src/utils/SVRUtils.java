@@ -18,7 +18,7 @@ public class SVRUtils {
         svr2off(midEdge(svr), appendMidToFilename(filename));
     }
 
-    public static SharedVertexRepresentation midEdge(SharedVertexRepresentation svr){
+    public static SharedVertexRepresentation midEdge(SharedVertexRepresentation svr) {
         int[] face;
         Triangle_3 t;
         Point_3[] nFace = new Point_3[3];
@@ -38,24 +38,25 @@ public class SVRUtils {
         }
         return new SharedVertexRepresentation(lt);
     }
-    public static void svr2off(SharedVertexRepresentation svr, String filename){
+
+    public static void svr2off(SharedVertexRepresentation svr, String filename) {
         try (
                 FileWriter fw = new FileWriter(filename);
                 BufferedWriter bw = new BufferedWriter(fw)
-        ){
+        ) {
             bw.write("OFF");
             bw.newLine();
             bw.write(svr.points.length + " " + svr.faces.length + " " + svr.sizeHalfedges);
             bw.newLine();
 
-            for (Point_3 p: svr.points) {
+            for (Point_3 p : svr.points) {
                 bw.write(point2str(p));
                 bw.newLine();
             }
 
             bw.newLine();
 
-            for (int[] face: svr.faces){
+            for (int[] face : svr.faces) {
                 bw.write(face2str(face));
                 bw.newLine();
             }
@@ -66,33 +67,33 @@ public class SVRUtils {
 
 
     private static String appendMidToFilename(String filename) {
-        return "OFF/mid.off";
+        return "DATA/shapes-OFF/mid.off";
 
     }
 
-    private static String face2str(int[] face){
+    private static String face2str(int[] face) {
         /* Use reduce here */
         String[] sf = Arrays.stream(face)
-                            .mapToObj(Integer::toString)
-                            .toArray(String[]::new);
+                .mapToObj(Integer::toString)
+                .toArray(String[]::new);
         return face.length + "  " + String.join(" ", sf);
     }
 
-    private static String point2str(Point_3 p){
+    private static String point2str(Point_3 p) {
         //DoubleFunction<String> format = x -> String.format("%.6f", x);
         //return format.apply(p.x) + " " + format.apply(p.y) + " " + format.apply(p.z);
-        return p.x+" "+p.y+" "+p.z;
+        return p.x + " " + p.y + " " + p.z;
     }
 
 
     //Unit Testing
-    public static void testOff2Svr2Off(String filename){
+    public static void testOff2Svr2Off(String filename) {
         SharedVertexRepresentation svr = new SharedVertexRepresentation(filename);
-        svr2off(svr, "OFF/test.off");
+        svr2off(svr, "DATA/shapes-OFF/test.off");
     }// At the end should make a diff of test.off and filename
 
     public static void main(String[] args) {
-        writeMidOFF("OFF/tri_triceratops.off");
+        writeMidOFF("DATA/shapes-OFF/tri_triceratops.off");
     }
 
 }
