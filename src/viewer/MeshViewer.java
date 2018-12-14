@@ -96,6 +96,11 @@ public class MeshViewer extends PApplet {
                     this.m1.drawSurface = !this.m1.drawSurface;
                     this.m2.drawSurface = !this.m2.drawSurface;
                 }
+                break;
+            case('f'):
+            case('F'):
+                this.m1.displayFound=!this.m1.displayFound;
+                this.m2.displayFound=!this.m2.displayFound;
             default:
                 break;
         }
