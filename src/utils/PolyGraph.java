@@ -120,10 +120,10 @@ public class PolyGraph {
     }
 
     public static void main(String[] args) {
-        String uTComputeEdgesFilename = "OFF/tetrahedron.off";
+        String uTComputeEdgesFilename = "DATA/shapes-OFF/tetrahedron.off";
         unitTestComputeEdges(uTComputeEdgesFilename);
 
-        String findCutFaceFilename = "OFF/tri_triceratops.off";
+        String findCutFaceFilename = "DATA/shapes-OFF/tri_triceratops.off";
         Polyhedron_3<Point_3> triceratopsPoly = MeshLoader.getSurfaceMesh(findCutFaceFilename);
         Face<Point_3> cutFace = findCutFace(triceratopsPoly);
         System.out.println(cutFace.toString());

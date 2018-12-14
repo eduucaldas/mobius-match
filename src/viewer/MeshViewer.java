@@ -21,10 +21,10 @@ public class MeshViewer extends PApplet {
     int drawnMesh = 0;
     boolean algoIsDone;
 
-    String filename1 = "OFF/cow.off";
-    String filename2 = "OFF/cow.off";
+    String filename1 = "DATA/non-rigid-world-OFF/cat1.off";
+    String filename2 = "DATA/non-rigid-world-OFF/cat2.off";
 
-    //String filename2="OFF/tri_triceratops.off";
+    //String filename2="DATA/shapes-OFF/tri_triceratops.off";
     public void setup() {
         size(800, 600, P3D);
         ArcBall arcball = new ArcBall(this);

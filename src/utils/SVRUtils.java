@@ -67,7 +67,7 @@ public class SVRUtils {
 
 
     private static String appendMidToFilename(String filename) {
-        return "OFF/mid.off";
+        return "DATA/shapes-OFF/mid.off";
 
     }
 
@@ -89,11 +89,11 @@ public class SVRUtils {
     //Unit Testing
     public static void testOff2Svr2Off(String filename) {
         SharedVertexRepresentation svr = new SharedVertexRepresentation(filename);
-        svr2off(svr, "OFF/test.off");
+        svr2off(svr, "DATA/shapes-OFF/test.off");
     }// At the end should make a diff of test.off and filename
 
     public static void main(String[] args) {
-        writeMidOFF("OFF/tri_triceratops.off");
+        writeMidOFF("DATA/shapes-OFF/tri_triceratops.off");
     }
 
 }

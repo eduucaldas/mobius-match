@@ -17,6 +17,7 @@
 *.zip
 *.tar.gz
 *.rar
+*.swp
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
@@ -24,8 +25,12 @@ hs_err_pid*
 # out binary folder
 out/
 
+# Online available data
+DATA/non-rigid-world-DATA
+
 # OFF generated files
-OFF/mid*
+DATA/non-rigid-world-OFF
+DATA/shapes-OFF/mid*
 
 # .idea stuff
 .idea

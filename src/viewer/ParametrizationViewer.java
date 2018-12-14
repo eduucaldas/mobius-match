@@ -18,8 +18,8 @@ import java.util.Hashtable;
  * A viewer to debug the parametrization!
  */
 public class ParametrizationViewer extends MeshViewer {
-    String filename1 = "OFF/cow.off";
-    String filename2 = "OFF/cow.off";
+    String filename1 = "DATA/shapes-OFF/cow.off";
+    String filename2 = "DATA/shapes-OFF/cow.off";
     Hashtable<Halfedge, double[]> h1;
     Hashtable<Halfedge, double[]> h2;
     int drawnMesh;

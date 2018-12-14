@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class MeshBrowsingTest {
-    static String filename = "OFF/cow.off";
+    static String filename = "DATA/shapes-OFF/cow.off";
 
     private static void updateSurround(Hashtable<Halfedge, Double> midEdgeMesh, Halfedge p) {
         /*to minimize computation time, if we see that opposite halfedge is in the hash table we use its value*/
