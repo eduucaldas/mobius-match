@@ -1,18 +1,11 @@
 package utils;
 
 import Jcg.geometry.Point_3;
-import Jcg.graph.GeometricGraph_3;
-import Jcg.graph.GraphBuilder;
 import Jcg.mesh.MeshLoader;
 import Jcg.polyhedron.Face;
 import Jcg.polyhedron.Polyhedron_3;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
-import java.util.stream.Collectors;
 
 public class PolyGraph {
     /* Pseudocode for finding the findCutFace
@@ -27,7 +20,7 @@ public class PolyGraph {
 
     /* For the moment we`zre using a functional approach */
 
-    private static double[][] computeEdges(Polyhedron_3<Point_3> poly){
+    private static double[][] computeEdges(Polyhedron_3<Point_3> poly) {
         int nVert = poly.vertices.size();
         double[][] edge = new double[nVert][nVert];
         /*  Remark: As the graph from a mesh is undirected
@@ -68,7 +61,7 @@ public class PolyGraph {
         return edge;
     }
 
-    private static void unitTestComputeEdges(String filename){
+    private static void unitTestComputeEdges(String filename) {
         // They should be equal
         double[][] edgeWeightsViaPolyhedron = computeEdges(MeshLoader.getSurfaceMesh(filename));
         // First let`s just compare their sum, should be enough
@@ -82,13 +75,13 @@ public class PolyGraph {
         }
     }
 
-    private static double[][] floydWarshall(double[][] edges){
+    private static double[][] floydWarshall(double[][] edges) {
         int nVert = edges.length;
         double[][] dist = new double[nVert][nVert];
         for (int k = 0; k < nVert; k++) {
             for (int i = 0; i < nVert; i++) {
                 for (int j = 0; j < nVert; j++) {
-                    if(dist[i][j] > dist[i][k] + dist[k][j])
+                    if (dist[i][j] > dist[i][k] + dist[k][j])
                         dist[i][j] = dist[i][k] + dist[k][j];
                 }
             }
@@ -96,7 +89,7 @@ public class PolyGraph {
         return dist;
     }
 
-    private static int indexOfMinGeodesicAvgVertex(double[][] dist){
+    private static int indexOfMinGeodesicAvgVertex(double[][] dist) {
         int indexOfMin = 0;
         int nVert = dist.length;
         double geodesicSum;
@@ -107,7 +100,7 @@ public class PolyGraph {
             for (int j = 0; j < nVert; j++) {
                 geodesicSum += dist[i][j];
             }
-            if (geodesicSum < minGeodesicSum){
+            if (geodesicSum < minGeodesicSum) {
                 minGeodesicSum = geodesicSum;
                 indexOfMin = i;
             }
@@ -115,7 +108,7 @@ public class PolyGraph {
         return indexOfMin;
     }
 
-    public static Face<Point_3> findCutFace(Polyhedron_3<Point_3> poly){
+    public static Face<Point_3> findCutFace(Polyhedron_3<Point_3> poly) {
         double[][] edges = computeEdges(poly);
 
         double[][] geodesicDistances = floydWarshall(edges);
@@ -136,7 +129,6 @@ public class PolyGraph {
         System.out.println(cutFace.toString());
 
     }
-
 
 
 }
