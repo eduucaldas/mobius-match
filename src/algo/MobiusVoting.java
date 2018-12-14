@@ -21,7 +21,7 @@ public class MobiusVoting {
 
     int K;
     double epsilon;
-    double precisionDistance=Math.pow(10,-14);
+    double precisionDistance=Math.pow(10,-12);
     public MobiusVoting(double[][] c1, double[][] c2, int threshold, double epsilon) {
         this.c1 = c1;
         this.c2 = c2;
@@ -95,21 +95,16 @@ public class MobiusVoting {
     }
 
     private double[][][][] createMobiusTransform(int[][] inputPoints) {
-        /* creates möbius transforms for each mesh using the sampled points
+        /* creates Möbius transforms for each mesh using the sampled points
         *  It returns a double list of 4 elements such as a=double[0][1], b=double[0][1], d=double[0][2], d=double[0][3] for m1
         *  if the computed Möbius matrix is of the form (a*z+b)/(c*z+d)
         * We aligned our initial points on 3 constants points, we could choose e(i*pi*2/3*j), j=1,2,3 as used in the paper
-        * But we can also choose 0,1,infinity*/
-        /*double[] y1={1/2,Math.sqrt(3)/2};
-        double[] y2={-1/2,Math.sqrt(3)/2};
-        double[] y3={-1,0};*/
+        * But we could also choose 0,1,infinity*/
+        /*double[] y1={-1/2,Math.sqrt(3)/2};
+        double[] y2={-1/2,-Math.sqrt(3)/2};
+        double[] y3={1,0};*/
         double[][][] localisationMatrix={{{-1./3.,0.0},{0.16666667,0.28867513}},
-                                        {{-1./3.,0.0},{-0.5,-0.28867513}}};
-         /*===> generated numerical uncertainties, which lead to sample points being slightly computed as farther than other vertices...
-         thus we needed to define a precision error over distances computing...
-        */
-        /*double[][][] localisationMatrix={{{0.0,-0.57735027},{-0.5,-0.28867513}},
-                {{0.0,-0.57735027},{-0.5,-0.28867513}}};*/
+                                        {{-1./3.,0.0},{0.16666667,-0.28867513}}};
         double[] c1z1=this.c1[inputPoints[0][0]];
         double[] c1z2=this.c1[inputPoints[0][1]];
         double[] c1z3=this.c1[inputPoints[0][2]];
@@ -127,8 +122,8 @@ public class MobiusVoting {
         mobTransform=new double[2][2][2];
         mobTransform[0][0]=this.complexDiff(c2z2,c2z3);
         mobTransform[0][1]=this.complexDiff(this.complexProd(c2z1,c2z3),this.complexProd(c2z2,c2z1));
-        mobTransform[0][0]=this.complexDiff(c2z2,c2z1);
-        mobTransform[0][1]=this.complexDiff(this.complexProd(c2z3,c2z1),this.complexProd(c2z3,c2z2));
+        mobTransform[1][0]=this.complexDiff(c2z2,c2z1);
+        mobTransform[1][1]=this.complexDiff(this.complexProd(c2z3,c2z1),this.complexProd(c2z3,c2z2));
         double[][][] mobTransform2=this.matrixProd(localisationMatrix,mobTransform);
 
         double[][][][] mob=new double[2][2][2][2];
@@ -213,7 +208,7 @@ public class MobiusVoting {
         return indexes;
     }
     private ArrayList<int[]> findMutuallyNearestNeighbors() {
-        /*this methods find mutually nearest Neighbors in the two planes constructed with mobius transform
+        /*This method finds mutually nearest neighbors in the two planes constructed with mobius transform
         * Gives back the list of mutually nearest neighbor as an ArrayList of int[2] such as:
         * int[0] is the index of a point in c1
         * int[1] is the index of a point in c2
@@ -231,18 +226,15 @@ public class MobiusVoting {
         ArrayList<int[]> mutuallyClosest=new ArrayList<>();
         for(int i=0;i<c1NearestNeighbor.size();i++){
             for(int j:c1NearestNeighbor.get(i)){
-                for(int h:c2NearestNeighbor.get(j)){
-                    if(h==i){
+                for(int h:c2NearestNeighbor.get(j))
+                    if(h==i)
                         mutuallyClosest.add(new int[]{i,j});
-                    }
-                }
             }
         }
         return mutuallyClosest;
     }
     private void updateCorrespondenceMatrix(ArrayList<int[]> mutuallyClosestPairs) {
-        /*updates correspondence Matrix, if the number of mutually closest pairs >=K:
-         * TO DO:
+        /* Updates correspondence Matrix, if the number of mutually closest pairs >=K:
          * 1) compute the deformation energy
          * 2) For each mutually nearest neighbors: update the correspondence matrix
          * */
@@ -250,7 +242,7 @@ public class MobiusVoting {
             double E=0;
             for(int i=0;i<mutuallyClosestPairs.size();i++){
                 int[] pair=mutuallyClosestPairs.get(i);
-                E+=Math.sqrt(this.complexDist(this.transformedc1[pair[0]],this.transformedc2[pair[1]]));
+                E+=Math.sqrt(this.complexDist(this.c1[pair[0]],this.c2[pair[1]]));
             }
             E=E/mutuallyClosestPairs.size();
             for(int i=0;i<mutuallyClosestPairs.size();i++){
@@ -264,26 +256,9 @@ public class MobiusVoting {
         this.CorrespondenceMatrix=new double[this.c1.length][this.c2.length];
         for(int i=0;i<I;i++){
             int[][] sampled=this.sampleRandomPoint();
-            System.out.println("Sampled: ");
-            for(int[] v:sampled)
-                System.out.print(" ("+v[0]+","+v[1]+","+v[2]+")");
             double[][][][] Mobius=this.createMobiusTransform(sampled);
             this.applyMobius(Mobius);
             ArrayList<int[]> mutuallyNearest=this.findMutuallyNearestNeighbors();
-            for(int j=0;j<3;j++){
-                boolean isFound=false;
-                for(int[] arr:mutuallyNearest){
-                    if(arr[0]==sampled[0][j] && arr[1]==sampled[1][j]){
-                        isFound=true;
-                    }
-                }
-                if(!isFound){
-                    System.out.println(this.transformedc1[sampled[0][j]][0]+","+this.transformedc1[sampled[0][j]][1]+" VS "+this.transformedc2[sampled[1][j]][0]+","+this.transformedc2[sampled[1][j]][1]);
-                    System.out.println(this.complexDist(this.transformedc1[sampled[0][j]],this.transformedc2[sampled[1][j]]));
-                    System.out.println(this.complexDist(this.transformedc1[sampled[0][j]],this.transformedc2[this.findNearestNeighbor(sampled[0][j],true)[0]]));
-                    //throw new Error("did not find sampled");
-                }
-            }
             this.updateCorrespondenceMatrix(mutuallyNearest);
         }
         return CorrespondenceMatrix;

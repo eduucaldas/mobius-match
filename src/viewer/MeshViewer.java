@@ -2,10 +2,8 @@ package viewer;
 
 import algo.runAlgo;
 import processing.core.*;
-import Jcg.geometry.*;
 import Jcg.polyhedron.*;
 import meshmanager.*;
-import test.SamplerTest;
 
 /**
  * A simple 3d viewer for visualizing surface meshes (based on Processing)
@@ -18,20 +16,14 @@ public class MeshViewer extends PApplet {
 
     public SurfaceMesh m1; // 3d surface mesh renderer
     public SurfaceMesh m2;
-    int linAlgLibrary = 0;
-    int numLinearAlgLibraries = 2;
     int renderType = 1; // choice of type of rendering
-    int renderModes = 2; // number of rendering modes
-    Polyhedron_3<Point_3> mesh;
-    double tolerance = 0.00001;
-    public SamplerTest sampler;
-    String filename;
     public runAlgo vm;
     int drawnMesh=0;
+    boolean algoIsDone;
 
     String filename1="OFF/cow.off";
-    //String filename2="OFF/tri_triceratops.off";
     String filename2="OFF/cow.off";
+    //String filename2="OFF/tri_triceratops.off";
     public void setup() {
         size(800, 600, P3D);
         ArcBall arcball = new ArcBall(this);
@@ -41,7 +33,6 @@ public class MeshViewer extends PApplet {
         //this.mesh = this.m1.polyhedron3D;
         this.m2 = new SurfaceMesh(this,filename2);
         //this.sampler=new SamplerTest(this.renderer,this);
-
         int index = 0;
         for (Vertex v : m1.polyhedron3D.vertices) {
             v.index = index;
@@ -76,8 +67,9 @@ public class MeshViewer extends PApplet {
         switch (key) {
             case ('e'):
             case ('E'):
-                //We execute our algorythm if the e or E button is pressed.
+                //We execute our algorithm if the e or E button is pressed.
                 this.vm.executeAlgorithm();
+                this.algoIsDone=true;
                 break;
             case('m'):
             case('M'):
@@ -87,6 +79,23 @@ public class MeshViewer extends PApplet {
             case('S'):
                 this.m1.displaySampled=!this.m1.displaySampled;
                 this.m2.displaySampled=!this.m2.displaySampled;
+                break;
+            case('i'):
+            case('I'):
+                this.m1.zoom=this.m1.zoom*2;
+                this.m2.zoom=this.m2.zoom*2;
+                break;
+            case('o'):
+            case('O'):
+                this.m1.zoom=this.m1.zoom/2;
+                this.m2.zoom=this.m2.zoom/2;
+                break;
+            case('p'):
+            case('P'):
+                if(this.algoIsDone) {
+                    this.m1.drawSurface = !this.m1.drawSurface;
+                    this.m2.drawSurface = !this.m2.drawSurface;
+                }
             default:
                 break;
         }
@@ -95,12 +104,8 @@ public class MeshViewer extends PApplet {
         else
             this.m2.updateScaleFactor();
     }
-    /**
-     * For running the PApplet as Java application
-     */
+
     public static void main(String[] args) {
-        //PApplet pa=new MeshViewer();
-        //pa.setSize(400, 400);
         PApplet.main(new String[]{"viewer.MeshViewer"});
     }
 }

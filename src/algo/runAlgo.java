@@ -32,10 +32,17 @@ public class runAlgo {
         this.mV=mv;
     }
 
-    private void sample(){
+    private void sample(int N,double epsilon){
+        /* Sample the mesh
+                - N defines the number of sample to take
+                - epsilon is used to discover local maximum of Gauss Curvature.
+                    Vertex are considered local maxima of Gauss Curvature when their gradient value is below epsilon
+                    While we don't have find any local maxima of Gauss Curvature we multiply epsilon by 10 at each epoch....
+                Giving N=-1 and epsilon=-1 calls for default values (100 and 0.001 respectively)
+         */
         System.out.println("Parametrization of first mesh");
         m1= mV.m1;
-        Sampler sampler1=new Sampler(-1,-1);
+        Sampler sampler1=new Sampler(N,epsilon);
         System.out.println("Sampling mesh 1");
         sampled1=sampler1.sample(m1);
         m1.sampled=sampled1;
@@ -43,7 +50,7 @@ public class runAlgo {
         System.out.println("Finished sampling mesh 1");
 
         m2= mV.m2;
-        Sampler sampler2=new Sampler(-1,-1);
+        Sampler sampler2=new Sampler(N,epsilon);
         System.out.println("Sampling mesh 2");
         sampled2=sampler2.sample(m2);
         m2.sampled=sampled2;
@@ -51,6 +58,8 @@ public class runAlgo {
         System.out.println("Finished sampling mesh 2");
     }
     private void findCutFace(){
+        /*  Finds cut faces
+         */
         System.out.println("finding cut face for 1");
         Face cut1=PolyGraph.findCutFace(m1.polyhedron3D);
         m1.cutFace=cut1;
@@ -69,30 +78,37 @@ public class runAlgo {
         System.out.println("Computing parametrization");
         return mp1.planarEmbeding();
     }
-    private void parametrize(){
-        MobiusParametrization mp1=new MobiusParametrization(m1,m1.cutFace,0.001);
+    private void parametrize(double precision){
+        /* Parametrizing the mesh,
+            - the precision parameter is used in the linear solver as the precision to reach.
+         */
+        MobiusParametrization mp1=new MobiusParametrization(m1,m1.cutFace,precision);
         System.out.println("finding projection sampled");
         c1=mp1.getProjectionFromSampled(sampled1);
+        this.m1.planarEmbedding=mp1.planarEmbed;
         System.out.println("Ended parametrization of 1");
         //Face cut2=m2.polyhedron3D.facets.get(0);
-        MobiusParametrization mp2=new MobiusParametrization(m2,m2.cutFace,0.001);
+        MobiusParametrization mp2=new MobiusParametrization(m2,m2.cutFace,precision);
         System.out.println("finding projection sampled");
         c2=mp2.getProjectionFromSampled(sampled2);
+        this.m2.planarEmbedding=mp2.planarEmbed;
         System.out.println("Ended parametrization of 2");
     }
-    private void mobiusVote(){
-        MobiusVoting mv=new MobiusVoting(c1,c2,-1,0.001);
+    private void mobiusVote(double epsilon,int numberOfEpoch ){
+        /*Launch Mobius Vote,
+            - The epsilon parameter is used in the computation of correspondence Matrix value
+            - The second parameter is the number of epoch to run. The paper recommends to take
+         */
+        MobiusVoting mv=new MobiusVoting(c1,c2,-1,epsilon);
         System.out.println("Computing correspondences matrix");
-        correspondences=mv.createConfidenceMatrix(100);
-        /*for(int i=0;i<correspondences.length;i++){
-            for(int j=0;j<correspondences[i].length;j++){
-                System.out.print(correspondences[i][j]+" ");
-            }
-            System.out.println("");
-        }*/
-        System.out.println("Computing fuzzy matrix and giving corresponding vertex");
+
+        correspondences=mv.createConfidenceMatrix(numberOfEpoch);
     }
     private void establishCorrespondenceProcessor(){
+        /* Computes fuzzy Matrix
+            - the threshold parameter is the parameter to do discriminate first values.
+         */
+        System.out.println("Computing fuzzy matrix and giving corresponding vertex");
         CorrespondenceProcessor cp=new CorrespondenceProcessor(m1,m2,0.97);
         ArrayList<Vertex[]> aV=cp.computeFuzzyCorrespondenceMatrix(correspondences);
         Vertex[] v1=new Vertex[aV.size()];
@@ -101,7 +117,6 @@ public class runAlgo {
             v1[i]= aV.get(i)[0];
             v2[i]=aV.get(i)[1];
         }
-        System.out.println("Found : "+v1.length+" coresponding vertex in v1 and "+v2.length+" corresponding vertex in v2");
         /*indicate to SurfaceMesh the vertex corresponding to correspondences*/
         m1.correspondence=v1;
         m2.correspondence=v2;
@@ -109,14 +124,15 @@ public class runAlgo {
         m2.displayFound=true;
     }
     public void executeAlgorithm(){
-        this.sample();
+        this.sample(-1,-1);
         this.findCutFace();
-        this.parametrize();
-        this.mobiusVote();
+        this.parametrize(0.001);
+        //For more accurate solution use NumberOfEpoch=10*(int)Math.pow(this.c1.length,3)
+        this.mobiusVote(0.001,10*(int)Math.pow(this.c1.length,2));
         this.establishCorrespondenceProcessor();
     }
     public void initializeDebug(){
-        this.sample();
+        this.sample(-1,-1);
         this.findCutFace();
     }
     public Hashtable<Halfedge,double[]> executeDebug(SurfaceMesh m0){

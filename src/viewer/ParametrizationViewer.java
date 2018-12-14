@@ -1,28 +1,23 @@
 package viewer;
 
-
-import Jcg.mesh.MeshLoader;
 import algo.runAlgo;
 import processing.core.*;
 import Jcg.geometry.*;
 import Jcg.polyhedron.*;
 import meshmanager.*;
-import test.SamplerTest;
 import utils.MidEdgeFromSurface;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
-import java.util.Set;
+
 
 /**
- * A viewer to debug the parametrization!e
+ * A viewer to debug the parametrization!
  *
  */
 public class ParametrizationViewer extends MeshViewer {
-    ArrayList<Halfedge> midEdgeList;
     String filename1="OFF/cow.off";
-    String filename2="OFF/tri_triceratops.off";
+    String filename2="OFF/cow.off";
     Hashtable<Halfedge,double[]> h1;
     Hashtable<Halfedge,double[]> h2;
     int drawnMesh;
@@ -39,16 +34,6 @@ public class ParametrizationViewer extends MeshViewer {
         runner.initializeDebug();
         h1=runner.executeDebug(m1);
         h2=runner.executeDebug(m2);
-        double count=0;
-        for(Halfedge h:h1.keySet()){
-            if(h1.get(h)[0]!=0) count++;
-            System.out.println(h1.get(h)[0]+" , "+h1.get(h)[1]);
-        }
-        System.out.println("===========================================================================");
-        for(Halfedge h:h2.keySet()){
-            if(h2.get(h)[0]!=0) count++;
-            System.out.println(h2.get(h)[0]+" , "+h2.get(h)[1]);
-        }
         drawSurface=true;
         drawnMesh=0;
         this.updateScaleFactor();

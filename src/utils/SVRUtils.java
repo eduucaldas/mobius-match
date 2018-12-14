@@ -2,17 +2,14 @@ package utils;
 
 import Jcg.geometry.Point_3;
 import Jcg.geometry.Triangle_3;
-import Jcg.mesh.MeshBuilder;
-import Jcg.mesh.MeshLoader;
 import Jcg.mesh.SharedVertexRepresentation;
-import Jcg.polyhedron.Polyhedron_3;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.DoubleFunction;
+
 
 public class SVRUtils {
     /*Only works with triangle meshes*/
@@ -67,7 +64,7 @@ public class SVRUtils {
         }
     }
 
-    /* TODO: smarter generation of name */
+
     private static String appendMidToFilename(String filename) {
         return "OFF/mid.off";
 

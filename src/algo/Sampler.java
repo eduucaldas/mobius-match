@@ -26,29 +26,6 @@ public class Sampler {
         }
         else this.epsilon=0.001;
     }
-    private double gaussCurvature(Vertex<Point_3> v){
-        /* computes gaussian curvature of a vertex -- could stay unused!!!*/
-        double curvature=2*Math.PI;
-        double area=0;
-        Halfedge<Point_3> e=v.getHalfedge();
-        Halfedge<Point_3> f1=e.opposite;
-        Halfedge<Point_3> f2=e.next.opposite;
-        Point_3 p0=v.getPoint();
-        while(!f2.equals(e)) {
-            f2 = f2.opposite;
-            Point_3 p1 = f1.getVertex().getPoint();
-            Point_3 p2 = f2.getVertex().getPoint();
-            Vector_3 v2 = new Vector_3(p0, p2);
-            Vector_3 v1 = new Vector_3(p0, p1);
-            double pdt = (double) v1.innerProduct(v2);
-            double angle = Math.acos(pdt / Math.sqrt((double) v1.squaredLength() * (double) v2.squaredLength()));
-            curvature += -angle;
-            area += pdt;
-            f1 = f2;
-            f2 = f2.opposite.next.opposite;
-        }
-        return curvature/area;
-    }
     private static Vector_3 gaussCurvatureDerivative(Vertex<Point_3> v){
         Vector_3 angleGrad=new Vector_3(0,0,0);
         Halfedge<Point_3> e=v.getHalfedge();
@@ -137,24 +114,6 @@ public class Sampler {
     }
     private static Vertex fps(ArrayList<Vertex> initialSample,SurfaceMesh m1){
         /* Realise farthest point search: from sourced points it looks for the geodesically most distant points
-        * It repeats the following algorithm:
-        * Initialisation:
-        *     each source vertex is put in the hash, with dist = 0.
-        *     all other vertex are put in the Hash, with dist= -1.(infinity)
-        *     try: 1) For each source points look for Reacheable points.
-        *                   if its dist is -1: then set new real dist and add this point to the new sources table.
-        *                   else if vertexCurrentDist<sources dist+dist(sources-vertex) do nothing
-        *                        else set new real min dist and add this point to the new sources table.
-        *    if sources is not empty:
-        *          4) Update the sources list.
-        *     if not: we have explore the whole graph, thus finish by looking at the max dist in visited sources.
-        *
-        *     We could also implement the algorithm the following way:
-        *     each source vertex is put in the hash, with dist = 0, and in a SortedHash relative to distance
-        *     all other vertex are put in the Hash, with dist= -1.(infinity)
-        *     While there are elements in the sortedHash:
-        *       We take the first (minimal distance) element, and expand it to neighbours, the same way as before.
-        *
         * */
         Hashtable<Vertex,Double> distTable=new Hashtable<>();
         for(Vertex s:m1.polyhedron3D.vertices){
@@ -187,8 +146,6 @@ public class Sampler {
         * 1) Implement FPS algorithm in case we don't have enough maxima of Gauss Curvature
         * 1.1) This algorithm idea is to take the vertex with max distances from  its min distances to our presampled points
         *      Then it add this vertex to the sampled points and reiterates.
-        *      The issue is that we are using geodesic distances, so we need to build a graph from scratch every time we want to compute
-        *      distances from one point to other points.
         * 2) use this algorithm starting from the initial sample and extend while we haven't N sampled points...
         * */
         ArrayList<Vertex> v=new ArrayList<>();

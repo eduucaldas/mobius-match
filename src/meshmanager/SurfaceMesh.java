@@ -5,6 +5,9 @@ import Jcg.mesh.MeshLoader;
 import Jcg.polyhedron.*;
 import viewer.MeshViewer;
 
+import java.util.Collection;
+import java.util.Hashtable;
+
 /**
  * Class for rendering a surface triangle mesh (using Processing)
  *
@@ -24,7 +27,9 @@ public class SurfaceMesh {
     public double getScaleFactor(){
         return scaleFactor;
     }
-
+    public double zoom=1;
+    public Hashtable<Halfedge,double[]> planarEmbedding;
+    public boolean drawSurface;
     /**
      * Create a surface mesh from an OFF file
      */
@@ -34,6 +39,7 @@ public class SurfaceMesh {
         this.displaySampled=false;
         this.displayCutFace=false;
         this.polyhedron3D = MeshLoader.getSurfaceMesh(filename);
+        this.drawSurface=true;
 
         //System.out.println(polyhedron3D.verticesToString());
         //System.out.println(polyhedron3D.facesToString());
@@ -114,43 +120,45 @@ public class SurfaceMesh {
     /**
      * Draw the entire mesh
      */
+    private void drawPlanarEmbedding(){
+        for (Halfedge<Point_3> e : planarEmbedding.keySet()){
+            Point_3 p = new Point_3(planarEmbedding.get(e)[0],planarEmbedding.get(e)[1],0);
+            Point_3 q = new Point_3(planarEmbedding.get(e.next)[0],planarEmbedding.get(e.next)[1],0);
+            this.drawSegment(p, q); // draw edge (p,q)
+        }
+    }
     public void draw(int type) {
-        //this.drawAxis();
-        // draw all faces
-        if (type == 0) {
-            view.beginShape(view.TRIANGLES);
-            for (Face<Point_3> f : this.polyhedron3D.facets) {
-                this.drawFace(f);
+        if(this.drawSurface) {
+            if (type == 0) {
+                view.beginShape(view.TRIANGLES);
+                for (Face<Point_3> f : this.polyhedron3D.facets) {
+                    this.drawFace(f);
+                }
+                view.endShape();
+            } else {
+                // draw all edges
+                view.strokeWeight(1); // line width (for edges)
+                view.stroke(4);
+                for (Halfedge<Point_3> e : this.polyhedron3D.halfedges) {
+                    Point_3 p = e.vertex.getPoint();
+                    Point_3 q = e.opposite.vertex.getPoint();
+
+                    this.drawSegment(p, q); // draw edge (p,q)
+                }
             }
-            view.endShape();
-        } else {
-            // draw all edges
-            view.strokeWeight(1); // line width (for edges)
-            view.stroke(4);
-            for (Halfedge<Point_3> e : this.polyhedron3D.halfedges) {
-                Point_3 p = e.vertex.getPoint();
-                Point_3 q = e.opposite.vertex.getPoint();
-
-                this.drawSegment(p, q); // draw edge (p,q)
+            view.strokeWeight(1);
+            if (this.displaySampled) {
+                this.displaySampled();
+            }
+            if (this.displayFound) {
+                this.displayFound();
+            }
+            if (this.displayCutFace) {
+                this.displayCutFace();
             }
         }
-        //view.strokeWeight(1);
-
-		/*view.noStroke();
-		view.fill(0f, 0f, 250f);
-		for(Vertex<Point_3> v: this.polyhedron3D.vertices) {
-			this.drawVertex(v.getPoint());
-		}*/
-        view.strokeWeight(1);
-
-        if(this.displaySampled) {
-            this.displaySampled();
-        }
-        if(this.displayFound){
-            this.displayFound();
-        }
-        if(this.displayCutFace){
-            this.displayCutFace();
+        else{
+            this.drawPlanarEmbedding();
         }
     }
     private void displayCutFace(){
@@ -178,7 +186,7 @@ public class SurfaceMesh {
                 view.stroke((i+1)*255/(correspondence.length),(i+1)*255/(correspondence.length),0);
             else
                 view.stroke(0,(i+1)*255/(correspondence.length),(i+1)*255/(correspondence.length));
-            this.drawVertex((Point_3) v.getPoint(), 4);
+            this.drawVertex((Point_3) v.getPoint(), 8);
         }
     }
     /**
@@ -223,7 +231,19 @@ public class SurfaceMesh {
      * Update the scale factor
      */
     public void updateScaleFactor() {
-        this.scaleFactor = this.computeScaleFactor();
+        if(this.drawSurface)
+            this.scaleFactor = this.computeScaleFactor()*this.zoom;
+        else {
+            Collection<double[]> S = planarEmbedding.values();
+            double maxDistance = 0.;
+            Point_3 origin = new Point_3(0., 0., 0.);
+            for (double[] d : S) {
+                Vertex v = new Vertex(new Point_3(d[0], d[1], 0));
+                double distance = Math.sqrt(v.getPoint().squareDistance(origin).doubleValue());
+                maxDistance = Math.max(maxDistance, distance);
+            }
+            this.scaleFactor = Math.sqrt(3) / maxDistance * 150 *this.zoom;
+        }
     }
 
 

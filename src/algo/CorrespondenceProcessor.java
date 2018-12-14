@@ -63,14 +63,14 @@ public class CorrespondenceProcessor {
        }
        return up/(this.computeL2Dist(a)*this.computeL2Dist(b));
    }
-    private int[] findMax(Hashtable<Double,int[]> old,double[][] correspondenceMatrix){
+    private int[] findMax(Hashtable<int[],Double> old,double[][] correspondenceMatrix){
         double max=0;
         int[] coord=new int[2];
         for(int i=0;i<correspondenceMatrix.length;i++){
             for(int j=0;j<correspondenceMatrix.length;j++){
                 int[] coordInter={i,j};
                 boolean contains=true;
-                for(int[] coords:old.values()){
+                for(int[] coords:old.keySet()){
                     if(coordInter[0]==coords[0]){
                         contains=false;
                         break;
@@ -115,33 +115,27 @@ public class CorrespondenceProcessor {
          * Gives back vertexes of final list of correspondences.
          */
         this.normalizeByMax(correspondenceMatrix);
-        for(int i=0;i<correspondenceMatrix.length;i++){
-            for(int j=0;j<correspondenceMatrix[i].length;j++){
-                System.out.print(correspondenceMatrix[i][j]+" ");
-            }
-            System.out.println("");
-        }
         //CREATION OF FIRST CORRESPONDENCE MATRIX:
-        Hashtable<Double,int[]> fuzzyCorrespondence=new Hashtable<Double, int[]>();
+        Hashtable<int[],Double> fuzzyCorrespondence=new Hashtable<int[],Double>();
         for(int i=0;i<correspondenceMatrix.length;i++){
             int[] coord=this.findMax(fuzzyCorrespondence,correspondenceMatrix);
-            fuzzyCorrespondence.put(correspondenceMatrix[coord[0]][coord[1]],coord);
+            fuzzyCorrespondence.put(coord,correspondenceMatrix[coord[0]][coord[1]]);
         }
-
         //Find vertex array corresponding to points
         Vertex[][] interestingPoints=new Vertex[fuzzyCorrespondence.keySet().size()][2];
         int boucle=0;
         ArrayList<Vertex[]> realCorrespondence=new ArrayList<Vertex[]>();
         ArrayList<Vertex[]> potentialCorrespondence=new ArrayList<Vertex[]>();
-        for(double max:fuzzyCorrespondence.keySet()){
-            int[] coords=fuzzyCorrespondence.get(max);
+        for(int[] coords:fuzzyCorrespondence.keySet()){
             Vertex[] v=new Vertex[2];
             v[0]=this.m1.sampled[coords[0]];
             v[1]=this.m2.sampled[coords[1]];
             interestingPoints[boucle][0]=v[0];
             interestingPoints[boucle][1]=v[1];
-            if(max>this.threshold){
+            if(fuzzyCorrespondence.get(coords)>this.threshold){
                 realCorrespondence.add(v);
+                System.out.print("The following vertex: "+v[0]+v[1]);
+                System.out.print("is voted as similar"+correspondenceMatrix[coords[0]][coords[1]]);
             }
             else{
                 potentialCorrespondence.add(v);
@@ -149,6 +143,9 @@ public class CorrespondenceProcessor {
             boucle++;
         }
         System.out.println("Found "+realCorrespondence.size()+" pairs with confidence over the threshold");
+        for(Vertex[] v:realCorrespondence){
+            System.out.print(v[0]+" "+v[1]);
+        }
         System.out.println("Found "+potentialCorrespondence.size()+" pairs with confidence under the threshold");
         // INCREASE OF THIS CORRESPONDENCE MATRIX PRECISION
         ArrayList<Vertex> set1=new ArrayList<Vertex>();

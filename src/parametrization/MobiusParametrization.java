@@ -38,6 +38,7 @@ public class MobiusParametrization {
     double[] U;
     boolean[] isInitialPoints;
     Face cutFace;
+    public Hashtable<Halfedge,double[]> planarEmbed;
 
     public MobiusParametrization(SurfaceMesh m1,Face cutFace,double precision){
         this.m1=m1;
@@ -281,7 +282,7 @@ public class MobiusParametrization {
         **/
         ArrayList<Halfedge> sources=new ArrayList<>();
         Hashtable<Halfedge,Double> midEdgeMesh= new Hashtable<>();
-        Halfedge e0=this.m1.polyhedron3D.vertices.get(10).getHalfedge();
+        Halfedge e0=this.m1.polyhedron3D.vertices.get(Math.min(10,m1.polyhedron3D.vertices.size()-1)).getHalfedge();
         midEdgeMesh.put(e0,0.);
         sources.add(e0);
         while(!sources.isEmpty()){
@@ -347,7 +348,7 @@ public class MobiusParametrization {
         return selectedEdge;
     }
     public double[][] getProjectionFromSampled(Vertex[] sample){
-        Hashtable<Halfedge,double[]> planarEmbed=this.planarEmbeding();
+        this.planarEmbed=this.planarEmbeding();
         double[][] projection=new double[sample.length][2];
         for(int i=0;i<sample.length;i++){
             //we need to find closest mid-edge vertex.
