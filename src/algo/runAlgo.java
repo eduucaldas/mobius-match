@@ -124,11 +124,11 @@ public class runAlgo {
     }
 
     public void executeAlgorithm() {
-        this.sample(-1, -1);
+        this.sample(-1, 0.00001);
         this.findCutFace();
         this.parametrize(0.001);
         //For more accurate solution use NumberOfEpoch=10*(int)Math.pow(this.c1.length,3)
-        this.mobiusVote(0.001, 10 * (int) Math.pow(this.c1.length, 2));
+        this.mobiusVote(0.001, 100 * (int) Math.pow(this.c1.length, 2));
         this.establishCorrespondenceProcessor();
     }
 

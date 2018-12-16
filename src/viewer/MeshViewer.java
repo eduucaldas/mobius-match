@@ -104,6 +104,7 @@ public class MeshViewer extends PApplet {
             case('F'):
                 this.m1.displayFound=!this.m1.displayFound;
                 this.m2.displayFound=!this.m2.displayFound;
+                break;
             default:
                 break;
         }

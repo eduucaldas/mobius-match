@@ -32,5 +32,11 @@ DATA/non-rigid-world-DATA
 DATA/non-rigid-world-OFF
 DATA/shapes-OFF/mid*
 
+# scripts
+exec.sh
+
+# results - not yet
+res/
+
 # .idea stuff
 .idea
