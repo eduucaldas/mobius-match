@@ -21,8 +21,8 @@ public class MeshViewer extends PApplet {
     int drawnMesh = 0;
     boolean algoIsDone;
 
-    String filename1 = "DATA/non-rigid-world-OFF/cat1.off";
-    String filename2 = "DATA/non-rigid-world-OFF/cat2.off";
+    String filename1 = "DATA/non-rigid-world-OFF/horse0.off";
+    String filename2 = "DATA/shapes-OFF/cow.off";
 
     //String filename2="DATA/shapes-OFF/tri_triceratops.off";
     public void setup() {

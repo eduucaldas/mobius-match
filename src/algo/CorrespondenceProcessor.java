@@ -154,55 +154,67 @@ public class CorrespondenceProcessor {
         }
         System.out.println("Found " + potentialCorrespondence.size() + " pairs with confidence under the threshold");
         // INCREASE OF THIS CORRESPONDENCE MATRIX PRECISION
-        ArrayList<Vertex> set1 = new ArrayList<Vertex>();
-        ArrayList<Vertex> set2 = new ArrayList<Vertex>();
-        for (Vertex[] v2 : realCorrespondence) {
-            set1.add(v2[0]);
-            set2.add(v2[1]);
-        }
-        Hashtable<Vertex, double[]> a1 = new Hashtable<>();
-        Hashtable<Vertex, double[]> a2 = new Hashtable<>();
-
-        //we compute feature vectors
-        Hashtable<Vertex, Double> dist = new Hashtable<>();
-        for (Vertex[] v : potentialCorrespondence) {
-            Vertex p = v[0];
-            dist = geodesicDistances(this.m1, p);
-            a1.put(p, this.computeFeatureVector(set1, dist));
-
-            p = v[1];
-            dist = geodesicDistances(this.m2, p);
-            a2.put(p, this.computeFeatureVector(set2, dist));
-        }
-        //computes gamma:
-        double maxRadius = 0;
-        for (double d : dist.values()) {
-            if (maxRadius < d) {
-                maxRadius = d;
+        if(potentialCorrespondence.size()>0) {
+            ArrayList<Vertex> set1 = new ArrayList<Vertex>();
+            ArrayList<Vertex> set2 = new ArrayList<Vertex>();
+            for (Vertex[] v2 : realCorrespondence) {
+                set1.add(v2[0]);
+                set2.add(v2[1]);
             }
-        }
-        double gamma = 0.05 * maxRadius * 2 * Math.PI;
-        //finds good correspondence pairs in potential correspondence pairs
-        for (Vertex[] v : potentialCorrespondence) {
-            double min = -1;
-            for (Vertex[] v1 : potentialCorrespondence) {
-                Vertex bwl = v1[1];
-                double distance = this.computeFeatureDist(a1.get(v[0]), a2.get(bwl));
-                if ((min == -1) || (distance < min)) {
-                    min = distance;
+            Hashtable<Vertex, double[]> a1 = new Hashtable<>();
+            Hashtable<Vertex, double[]> a2 = new Hashtable<>();
+
+            //we compute feature vectors
+            Hashtable<Vertex, Double> dist1= new Hashtable<>();
+            Hashtable<Vertex, Hashtable<Vertex, Double>> distTotal1 = new Hashtable<>();
+            Hashtable<Vertex, Double> dist2;
+            Hashtable<Vertex, Hashtable<Vertex, Double>> distTotal2 = new Hashtable<>();
+            for (Vertex[] v : potentialCorrespondence) {
+                Vertex p = v[0];
+                dist1 = geodesicDistances(this.m1, p);
+                distTotal1.put(p, dist1);
+                a1.put(p, this.computeFeatureVector(set1, dist1));
+
+                p = v[1];
+                dist2 = geodesicDistances(this.m2, p);
+                distTotal2.put(p, dist2);
+                a2.put(p, this.computeFeatureVector(set2, dist2));
+            }
+            //computes gamma:
+            double maxRadius = 0;
+            for (double d : dist1.values()) {
+                if (maxRadius < d) {
+                    maxRadius = d;
                 }
             }
-            if (min < gamma) {
-                min = -1;
+            double gamma = 0.05 * maxRadius * 2 * Math.PI;
+            //finds good correspondence pairs in potential correspondence pairs
+            Vertex vmin= new Vertex();
+            for (Vertex[] v : potentialCorrespondence) {
+                double min = -1;
                 for (Vertex[] v1 : potentialCorrespondence) {
-                    Vertex azk = v1[0];
-                    double distance = this.computeFeatureDist(a1.get(azk), a2.get(v[1]));
+                    Vertex bwl = v1[1];
+                    double distance = this.computeFeatureDist(a1.get(v[0]), a2.get(bwl));
                     if ((min == -1) || (distance < min)) {
                         min = distance;
+                        vmin = bwl;
                     }
                 }
-                if (min < gamma) {
-                    realCorrespondence.add(v);
+                double g = distTotal2.get(v[1]).get(vmin);
+                if (g < gamma) {
+                    min = -1;
+                    for (Vertex[] v1 : potentialCorrespondence) {
+                        Vertex azk = v1[0];
+                        double distance = this.computeFeatureDist(a1.get(azk), a2.get(v[1]));
+                        if ((min == -1) || (distance < min)) {
+                            min = distance;
+                            vmin = azk;
+                        }
+                    }
+                    g = distTotal1.get(v[0]).get(vmin);
+                    if (g < gamma) {
+                        realCorrespondence.add(v);
+                    }
                 }
             }
         }

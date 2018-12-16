@@ -22,7 +22,7 @@ public class MobiusVoting {
         this.c1 = c1;
         this.c2 = c2;
         if (threshold != -1) this.K = threshold;
-        else this.K = (c1.length * 10) / 100;
+        else this.K =(int)Math.pow(this.c1.length,3);
         this.epsilon = epsilon;
     }
 
