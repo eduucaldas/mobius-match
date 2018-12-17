@@ -6,10 +6,12 @@ import Jcg.polyhedron.Face;
 import Jcg.polyhedron.Halfedge;
 import Jcg.polyhedron.Polyhedron_3;
 import Jcg.polyhedron.Vertex;
+
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.SparseDoubleAlgebra;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix1D;
+import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.SparseRCDoubleMatrix2D;
 import utils.GeometryUtils;
 import utils.MeshUtils;
